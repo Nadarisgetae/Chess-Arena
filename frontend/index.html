@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chess Arena — Adaptive AI Chess</title>
+  <meta name="description" content="Play chess against an adaptive AI that grows with you. Coach Mode, real-time evaluation, and beautiful design." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Ambient background orbs -->
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+  <div class="bg-orb orb-3"></div>
+
+  <div class="app-shell">
+
+    <!-- ── HEADER ─────────────────────────────────────────── -->
+    <header class="header glass">
+      <div class="header-brand">
+        <span class="brand-icon">♟</span>
+        <span class="brand-name">Chess <span class="brand-accent">Arena</span></span>
+      </div>
+      <nav class="header-nav">
+        <button class="nav-btn active" id="btn-play-mode">Play</button>
+        <button class="nav-btn" id="btn-coach-mode">Coach <span class="badge new">New</span></button>
+        <button class="nav-btn" id="btn-vision-mode">Vision <span class="badge soon">Soon</span></button>
+      </nav>
+      <div class="header-status" id="connection-status">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-text">Connecting…</span>
+      </div>
+    </header>
+
+    <!-- ── MAIN CONTENT ────────────────────────────────────── -->
+    <main class="main-content">
+
+      <!-- LEFT PANEL: engine info & controls -->
+      <aside class="side-panel glass" id="left-panel">
+
+        <!-- Engine opponent card -->
+        <div class="panel-section">
+          <div class="opponent-card">
+            <div class="opponent-avatar" id="engine-avatar">
+              <span>AI</span>
+            </div>
+            <div class="opponent-info">
+              <div class="opponent-name">Stockfish Engine</div>
+              <div class="opponent-elo" id="engine-elo-display">~1500 Elo</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Evaluation bar (vertical) -->
+        <div class="panel-section">
+          <div class="eval-section">
+            <span class="section-label">Evaluation</span>
+            <div class="eval-bar-wrapper">
+              <div class="eval-bar-track">
+                <div class="eval-bar-fill" id="eval-bar-fill"></div>
+                <div class="eval-bar-label white-label">W</div>
+                <div class="eval-bar-label black-label">B</div>
+              </div>
+              <div class="eval-score" id="eval-score">0.0</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Difficulty -->
+        <div class="panel-section">
+          <span class="section-label">Difficulty</span>
+          <div class="difficulty-wrapper">
+            <label style="display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:12px; cursor:pointer;">
+              <input type="checkbox" id="auto-difficulty" checked>
+              Auto Difficulty (Adaptive Player Model)
+            </label>
+            <div class="difficulty-labels">
+              <span>Beginner</span>
+              <span>Master</span>
+            </div>
+            <input
+              type="range" id="difficulty-slider"
+              min="0" max="20" value="10" step="1"
+              class="difficulty-slider" disabled
+            />
+            <div class="difficulty-value" id="difficulty-label" style="opacity:0.5;">Auto: Optimal match</div>
+          </div>
+        </div>
+
+        <!-- Color picker -->
+        <div class="panel-section">
+          <span class="section-label">Play as</span>
+          <div class="color-picker">
+            <button class="color-btn active" id="btn-play-white" data-color="white">
+              <span class="color-swatch white-swatch">♙</span> White
+            </button>
+            <button class="color-btn" id="btn-play-black" data-color="black">
+              <span class="color-swatch black-swatch">♟</span> Black
+            </button>
+          </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="panel-section action-btns">
+          <button class="btn-primary" id="btn-new-game">New Game</button>
+          <button class="btn-secondary" id="btn-resign" disabled>Resign</button>
+          <button class="btn-ghost" id="btn-flip">Flip Board ⇄</button>
+        </div>
+
+        <!-- Player card (bottom) -->
+        <div class="panel-section" style="margin-top:auto">
+          <div class="opponent-card" id="player-card">
+            <div class="opponent-avatar player-avatar">
+              <span>👤</span>
+            </div>
+            <div class="opponent-info">
+              <div class="opponent-name">You</div>
+              <div class="opponent-elo" id="player-elo-display">~1000 Elo</div>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- CENTER: chessboard -->
+      <div class="board-area">
+        <div class="board-container">
+          <!-- Rank labels left -->
+          <div class="rank-labels" id="rank-labels-left">
+            <span>8</span><span>7</span><span>6</span><span>5</span>
+            <span>4</span><span>3</span><span>2</span><span>1</span>
+          </div>
+
+          <!-- The board -->
+          <div class="board" id="chessboard"></div>
+
+          <!-- Rank labels right -->
+          <div class="rank-labels" id="rank-labels-right">
+            <span>8</span><span>7</span><span>6</span><span>5</span>
+            <span>4</span><span>3</span><span>2</span><span>1</span>
+          </div>
+        </div>
+
+        <!-- File labels -->
+        <div class="file-labels" id="file-labels">
+          <span>a</span><span>b</span><span>c</span><span>d</span>
+          <span>e</span><span>f</span><span>g</span><span>h</span>
+        </div>
+
+        <!-- Status bar -->
+        <div class="status-bar glass" id="status-bar">
+          <span class="status-icon" id="status-icon">♟</span>
+          <span id="game-status-text">Start a new game to play!</span>
+        </div>
+      </div>
+
+      <!-- RIGHT PANEL: move history -->
+      <aside class="side-panel glass" id="right-panel">
+        <div class="panel-section" style="flex:1; display:flex; flex-direction:column; min-height:0">
+          <span class="section-label">Move History</span>
+          <div class="move-list-wrapper">
+            <table class="move-table" id="move-table">
+              <thead>
+                <tr><th>#</th><th>White</th><th>Black</th></tr>
+              </thead>
+              <tbody id="move-table-body">
+                <tr class="empty-row"><td colspan="3">No moves yet</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── COACH CARD ──────────────────────────────────────────── -->
+        <div class="coach-card glass-inner hidden" id="coach-card">
+          <div class="coach-header">
+            <span class="coach-icon">🎓</span>
+            <span class="coach-title">Coach Analysis</span>
+            <span class="coach-quality-badge" id="coach-quality-badge">—</span>
+          </div>
+          <div class="coach-body">
+            <div class="coach-stat">
+              <span class="coach-stat-label">Win% change</span>
+              <span class="coach-stat-value" id="coach-loss">—</span>
+            </div>
+            <div class="coach-stat">
+              <span class="coach-stat-label">Best move</span>
+              <span class="coach-stat-value" id="coach-best-move">—</span>
+            </div>
+          </div>
+          <div class="coach-summary" id="coach-summary">—</div>
+        </div>
+
+        <!-- Win probability -->
+        <div class="panel-section">
+          <span class="section-label">Win Probability</span>
+          <div class="win-prob-bar">
+            <div class="win-prob-white" id="win-prob-white">50%</div>
+            <div class="win-prob-track">
+              <div class="win-prob-fill" id="win-prob-fill" style="width:50%"></div>
+            </div>
+            <div class="win-prob-black" id="win-prob-black">50%</div>
+          </div>
+        </div>
+
+        <!-- Last move info -->
+        <div class="panel-section">
+          <span class="section-label">Last Engine Move</span>
+          <div class="last-move-card glass-inner" id="last-move-card">
+            <span class="last-move-san" id="last-move-san">—</span>
+          </div>
+        </div>
+
+        <!-- Game result banner (hidden until game ends) -->
+        <div class="result-banner hidden" id="result-banner">
+          <div class="result-icon" id="result-icon">🏆</div>
+          <div class="result-text" id="result-text">Game Over</div>
+          <div class="result-sub" id="result-sub"></div>
+          <button class="btn-primary" id="btn-result-new-game">Play Again</button>
+        </div>
+
+      </aside>
+
+    </main>
+  </div>
+
+  <!-- Promotion dialog -->
+  <div class="modal-overlay hidden" id="promo-overlay">
+    <div class="promo-modal glass">
+      <div class="promo-title">Promote Pawn</div>
+      <div class="promo-choices">
+        <button class="promo-btn" id="promo-q" data-piece="q">♛ Queen</button>
+        <button class="promo-btn" id="promo-r" data-piece="r">♜ Rook</button>
+        <button class="promo-btn" id="promo-b" data-piece="b">♝ Bishop</button>
+        <button class="promo-btn" id="promo-n" data-piece="n">♞ Knight</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+# Environment
+.env
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Keys & secrets
+keys.json
+rotator_state.json
+*.key
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Stockfish binary (download separately)
+backend/stockfish/*.exe
+backend/stockfish/stockfish
+backend/stockfish/stockfish-*
+
+# Logs
+*.log
+logs/
+
+# Docker
+.docker/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node (if ever added)
+node_modules/
+dist/
