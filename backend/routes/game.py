@@ -87,17 +87,17 @@ async def _update_player_stats(player_id: str) -> None:
             WHERE g.player_id = ? AND g.result IS NOT NULL
         """, (player_id,)) as cur:
             stats = await cur.fetchone()
-               if stats and stats["games"] > 0:
-            await db.execute("""
-                INSERT INTO player_profile (player_id, games_played, avg_centipawn_loss, blunder_rate)
-                VALUES (?, ?, ?, ?)
-                ON CONFLICT(player_id) DO UPDATE SET
-                    games_played = excluded.games_played,
-                    avg_centipawn_loss = excluded.avg_centipawn_loss,
-                    blunder_rate = excluded.blunder_rate,
-                    updated_at = datetime('now')
-            """, (player_id, stats["games"], stats["avg_cp_loss"], stats["blunder_rate"]))
-            await db.commit()
+            if stats and stats["games"] > 0:
+                await db.execute("""
+                    INSERT INTO player_profile (player_id, games_played, avg_centipawn_loss, blunder_rate)
+                    VALUES (?, ?, ?, ?)
+                    ON CONFLICT(player_id) DO UPDATE SET
+                        games_played = excluded.games_played,
+                        avg_centipawn_loss = excluded.avg_centipawn_loss,
+                        blunder_rate = excluded.blunder_rate,
+                        updated_at = datetime('now')
+                """, (player_id, stats["games"], stats["avg_cp_loss"], stats["blunder_rate"]))
+                await db.commit()
     finally:
         await db.close()
 
@@ -120,7 +120,7 @@ async def new_game(req: NewGameRequest):
         try:
             async with db.execute("SELECT * FROM player_profile WHERE player_id = ?", (req.player_id,)) as cur:
                 profile_row = await cur.fetchone()
-                       profile = dict(profile_row) if profile_row else {}
+                profile = dict(profile_row) if profile_row else {}
 
             async with db.execute("""
                 SELECT                    g.engine_skill_level,
