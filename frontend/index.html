@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -29,6 +30,7 @@
         <button class="nav-btn active" id="btn-play-mode">Play</button>
         <button class="nav-btn" id="btn-coach-mode">Coach <span class="badge new">New</span></button>
         <button class="nav-btn" id="btn-vision-mode">Vision <span class="badge new">New</span></button>
+        <button class="nav-btn" id="btn-analytics-mode">Analytics <span class="badge new">New</span></button>
       </nav>
       <div class="header-status" id="connection-status">
         <span class="status-dot" id="status-dot"></span>
@@ -278,6 +280,86 @@
               <button class="btn-secondary" id="btn-vision-to-coach">🎓 Analyze in Coach Mode</button>
               <button class="btn-primary" id="btn-vision-to-play">⚔ Play Against Stockfish</button>
               <button class="btn-ghost" id="btn-vision-copy-fen">📋 Copy FEN</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── ANALYTICS WORKSPACE ────────────────────────────── -->
+      <section class="analytics-workspace glass hidden" id="analytics-workspace">
+        <div class="analytics-header">
+          <div>
+            <h2 class="analytics-title">📊 Player Performance Analytics</h2>
+            <p class="analytics-subtitle">Track your tactical accuracy, centipawn loss trends, and opening repertoire performance.</p>
+          </div>
+          <div class="analytics-header-actions">
+            <button class="btn-secondary" id="btn-refresh-analytics">↻ Refresh Stats</button>
+          </div>
+        </div>
+
+        <!-- KPI Cards Grid -->
+        <div class="analytics-kpi-grid">
+          <div class="analytics-card glass-inner">
+            <div class="kpi-label">Win Rate</div>
+            <div class="kpi-value highlight-emerald" id="stat-win-rate">0.0%</div>
+            <div class="kpi-sub" id="stat-record">0W / 0D / 0L</div>
+          </div>
+          <div class="analytics-card glass-inner">
+            <div class="kpi-label">Skill Estimate</div>
+            <div class="kpi-value highlight-accent" id="stat-skill-estimate">~1200</div>
+            <div class="kpi-sub">Adaptive Rating</div>
+          </div>
+          <div class="analytics-card glass-inner">
+            <div class="kpi-label">Avg Centipawn Loss</div>
+            <div class="kpi-value" id="stat-acpl">0.0 CP</div>
+            <div class="kpi-sub" id="stat-acpl-grade">Tactical Accuracy</div>
+          </div>
+          <div class="analytics-card glass-inner">
+            <div class="kpi-label">Blunder Rate</div>
+            <div class="kpi-value highlight-rose" id="stat-blunder-rate">0.0%</div>
+            <div class="kpi-sub" id="stat-blunder-sub">Per Move Ratio</div>
+          </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="analytics-charts-grid">
+          <!-- Chart 1: ACPL & Skill Progression -->
+          <div class="analytics-card glass-inner chart-card">
+            <div class="chart-header">
+              <span class="chart-title">📈 Performance Progression (Recent Games)</span>
+            </div>
+            <div class="chart-canvas-wrap">
+              <canvas id="chart-progression"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 2: Move Quality Breakdown -->
+          <div class="analytics-card glass-inner chart-card">
+            <div class="chart-header">
+              <span class="chart-title">🎯 Move Quality Distribution</span>
+            </div>
+            <div class="chart-canvas-wrap">
+              <canvas id="chart-move-quality"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 3: Openings Repertoire -->
+          <div class="analytics-card glass-inner chart-card">
+            <div class="chart-header">
+              <span class="chart-title">♟ Opening Repertoire Win Rates</span>
+            </div>
+            <div class="chart-canvas-wrap">
+              <canvas id="chart-openings"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 4: Color Asymmetry -->
+          <div class="analytics-card glass-inner chart-card">
+            <div class="chart-header">
+              <span class="chart-title">⚖ White vs Black Performance</span>
+            </div>
+            <div class="chart-canvas-wrap">
+              <canvas id="chart-colors"></canvas>
             </div>
           </div>
         </div>

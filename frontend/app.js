@@ -753,7 +753,7 @@ renderBoard(state.fen);
 // Vision Mode Implementation
 // ═══════════════════════════════════════════════════════════════════
 
-const MODES = { PLAY: 'play', COACH: 'coach', VISION: 'vision' };
+const MODES = { PLAY: 'play', COACH: 'coach', VISION: 'vision', ANALYTICS: 'analytics' };
 let currentMode = MODES.PLAY;
 
 function switchMode(mode) {
@@ -761,21 +761,29 @@ function switchMode(mode) {
   $('btn-play-mode').classList.toggle('active', mode === MODES.PLAY);
   $('btn-coach-mode').classList.toggle('active', mode === MODES.COACH);
   $('btn-vision-mode').classList.toggle('active', mode === MODES.VISION);
+  $('btn-analytics-mode').classList.toggle('active', mode === MODES.ANALYTICS);
 
+  const isPlayOrCoach = mode === MODES.PLAY || mode === MODES.COACH;
   const isVision = mode === MODES.VISION;
-  $('left-panel').style.display = isVision ? 'none' : '';
-  $('board-container').style.display = isVision ? 'none' : '';
-  $('right-panel').style.display = isVision ? 'none' : '';
+  const isAnalytics = mode === MODES.ANALYTICS;
+
+  $('left-panel').style.display = isPlayOrCoach ? '' : 'none';
+  $('board-container').style.display = isPlayOrCoach ? '' : 'none';
+  $('right-panel').style.display = isPlayOrCoach ? '' : 'none';
   $('vision-workspace').classList.toggle('hidden', !isVision);
+  $('analytics-workspace').classList.toggle('hidden', !isAnalytics);
 
   if (mode === MODES.COACH) {
     DOM.coachCard.style.display = 'block';
+  } else if (mode === MODES.ANALYTICS) {
+    loadAnalytics();
   }
 }
 
 $('btn-play-mode').addEventListener('click', () => switchMode(MODES.PLAY));
 $('btn-coach-mode').addEventListener('click', () => switchMode(MODES.COACH));
 $('btn-vision-mode').addEventListener('click', () => switchMode(MODES.VISION));
+$('btn-analytics-mode').addEventListener('click', () => switchMode(MODES.ANALYTICS));
 
 // ── Vision State ───────────────────────────────────────────────────
 const visionState = {
@@ -1147,4 +1155,209 @@ $('btn-vision-copy-fen').addEventListener('click', () => {
     setTimeout(() => { btn.textContent = old; }, 2000);
   });
 });
+
+
+// ═══════════════════════════════════════════════════════════════════
+// Analytics Mode Implementation
+// ═══════════════════════════════════════════════════════════════════
+
+const analyticsCharts = {
+  progression: null,
+  moveQuality: null,
+  openings: null,
+  colors: null,
+};
+
+$('btn-refresh-analytics').addEventListener('click', loadAnalytics);
+
+async function loadAnalytics() {
+  const btn = $('btn-refresh-analytics');
+  btn.textContent = '↻ Loading…';
+  btn.disabled = true;
+
+  try {
+    const playerId = state.playerId || 'default-player';
+    const res = await fetch(`${API}/analytics/player/${playerId}`);
+    if (!res.ok) throw new Error('Failed to load analytics data');
+    const data = await res.json();
+
+    // 1. Update KPI Summary Cards
+    const sum = data.summary;
+    $('stat-win-rate').textContent = `${sum.win_rate_pct}%`;
+    $('stat-record').textContent = `${sum.wins}W / ${sum.draws}D / ${sum.losses}L (${sum.games_played} total)`;
+    $('stat-skill-estimate').textContent = `~${Math.round(sum.current_skill_estimate)}`;
+    $('stat-acpl').textContent = `${sum.avg_centipawn_loss} CP`;
+    $('stat-acpl-grade').textContent = sum.avg_centipawn_loss < 35 ? 'Master Level Accuracy' : sum.avg_centipawn_loss < 55 ? 'Solid Club Level' : 'Developing Accuracy';
+    $('stat-blunder-rate').textContent = `${sum.blunder_rate_pct}%`;
+    $('stat-blunder-sub').textContent = `${data.move_quality_distribution.blunder} blunders total`;
+
+    // 2. Render Charts if Chart.js is loaded
+    if (typeof Chart !== 'undefined') {
+      renderProgressionChart(data.history_progression);
+      renderMoveQualityChart(data.move_quality_distribution);
+      renderOpeningsChart(data.openings_repertoire);
+      renderColorAsymmetryChart(data.color_asymmetry);
+    }
+  } catch (err) {
+    console.error('Analytics error:', err);
+  } finally {
+    btn.textContent = '↻ Refresh Stats';
+    btn.disabled = false;
+  }
+}
+
+function renderProgressionChart(history) {
+  if (analyticsCharts.progression) analyticsCharts.progression.destroy();
+  const ctx = $('chart-progression').getContext('2d');
+
+  const labels = history.map((h, i) => `G${i + 1}`);
+  const acplData = history.map(h => h.acpl);
+  const skillData = history.map(h => h.skill_level * 100);
+
+  analyticsCharts.progression = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Avg Centipawn Loss',
+          data: acplData,
+          borderColor: '#8b5cf6',
+          backgroundColor: 'rgba(139, 92, 246, 0.15)',
+          fill: true,
+          tension: 0.35,
+          yAxisID: 'y',
+        },
+        {
+          label: 'Engine Skill Equivalent',
+          data: skillData,
+          borderColor: '#10b981',
+          borderDash: [5, 5],
+          tension: 0.2,
+          yAxisID: 'y1',
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
+        y: {
+          title: { display: true, text: 'Centipawn Loss', color: '#64748b' },
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          ticks: { color: '#64748b' },
+        },
+        y1: {
+          position: 'right',
+          title: { display: true, text: 'Skill Rating', color: '#64748b' },
+          grid: { drawOnChartArea: false },
+          ticks: { color: '#10b981' },
+        },
+      },
+      plugins: {
+        legend: { labels: { color: '#e2e8f0', font: { size: 11 } } },
+      },
+    },
+  });
+}
+
+function renderMoveQualityChart(distribution) {
+  if (analyticsCharts.moveQuality) analyticsCharts.moveQuality.destroy();
+  const ctx = $('chart-move-quality').getContext('2d');
+
+  analyticsCharts.moveQuality = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Best', 'Good', 'Inaccuracy', 'Mistake', 'Blunder'],
+      datasets: [{
+        data: [
+          distribution.best,
+          distribution.good,
+          distribution.inaccuracy,
+          distribution.mistake,
+          distribution.blunder,
+        ],
+        backgroundColor: ['#10b981', '#06b6d4', '#f59e0b', '#f97316', '#f43f5e'],
+        borderWidth: 2,
+        borderColor: '#0e0e1a',
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right', labels: { color: '#e2e8f0', font: { size: 11 } } },
+      },
+    },
+  });
+}
+
+function renderOpeningsChart(openings) {
+  if (analyticsCharts.openings) analyticsCharts.openings.destroy();
+  const ctx = $('chart-openings').getContext('2d');
+
+  analyticsCharts.openings = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: openings.map(o => o.name),
+      datasets: [{
+        label: 'Win Rate (%)',
+        data: openings.map(o => o.win_rate_pct),
+        backgroundColor: '#8b5cf6',
+        borderRadius: 4,
+      }],
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: { max: 100, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
+        y: { grid: { display: false }, ticks: { color: '#e2e8f0', font: { size: 10 } } },
+      },
+      plugins: {
+        legend: { display: false },
+      },
+    },
+  });
+}
+
+function renderColorAsymmetryChart(colors) {
+  if (analyticsCharts.colors) analyticsCharts.colors.destroy();
+  const ctx = $('chart-colors').getContext('2d');
+
+  analyticsCharts.colors = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['White Pieces', 'Black Pieces'],
+      datasets: [
+        {
+          label: 'Win Rate (%)',
+          data: [colors.white ? colors.white.win_rate_pct : 50, colors.black ? colors.black.win_rate_pct : 50],
+          backgroundColor: '#10b981',
+          borderRadius: 4,
+        },
+        {
+          label: 'Avg CP Loss',
+          data: [colors.white ? colors.white.avg_cp_loss : 40, colors.black ? colors.black.avg_cp_loss : 40],
+          backgroundColor: '#f59e0b',
+          borderRadius: 4,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#e2e8f0' } },
+        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
+      },
+      plugins: {
+        legend: { labels: { color: '#e2e8f0', font: { size: 11 } } },
+      },
+    },
+  });
+}
+
 

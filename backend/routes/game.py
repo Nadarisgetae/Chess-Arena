@@ -158,9 +158,9 @@ async def new_game(req: NewGameRequest):
 
     try:
         await db.execute(
-            """INSERT INTO games (id, player_id, mode, engine_skill_level, pgn)
-               VALUES (?, ?, 'play', ?, '')""",
-            (game_id, req.player_id, actual_skill),
+            """INSERT INTO games (id, player_id, mode, engine_skill_level, pgn, player_color)
+               VALUES (?, ?, 'play', ?, '', ?)""",
+            (game_id, req.player_id, actual_skill, req.player_color),
         )
         await db.commit()
     finally:

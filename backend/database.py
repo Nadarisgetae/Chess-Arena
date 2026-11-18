@@ -82,6 +82,10 @@ ADDITIONAL_PLAYER_PROFILE_COLUMNS: dict[str, str] = {
     "endgame_conversion": "REAL",
 }
 
+ADDITIONAL_GAMES_COLUMNS: dict[str, str] = {
+    "player_color": "TEXT DEFAULT 'white'",
+}
+
 # ── Coach columns added in Phase 2 ─────────────────────────────────────────────
 # Use an ordered dict so migrations are applied in a predictable order.
 # Values are the SQL type + default clause.
@@ -139,6 +143,17 @@ async def _migrate_player_profile_table(db: aiosqlite.Connection) -> None:
     await db.commit()
 
 
+async def _migrate_games_table(db: aiosqlite.Connection) -> None:
+    """Idempotently add new features to games table."""
+    existing = await _get_table_columns(db, "games")
+    for column_name, definition in ADDITIONAL_GAMES_COLUMNS.items():
+        if column_name not in existing:
+            await db.execute(
+                f"ALTER TABLE games ADD COLUMN {column_name} {definition}"
+            )
+    await db.commit()
+
+
 async def init_db() -> None:
     """Create all tables and apply pending column migrations."""
     async with aiosqlite.connect(DB_PATH) as db:
@@ -150,6 +165,7 @@ async def init_db() -> None:
         await db.commit()
         await _migrate_moves_table(db)
         await _migrate_player_profile_table(db)
+        await _migrate_games_table(db)
 
 
 async def get_db() -> aiosqlite.Connection:
