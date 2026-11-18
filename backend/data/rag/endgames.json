@@ -1,0 +1,44 @@
+[
+  {
+    "principle_id": "king_centralization",
+    "name": "King Activity & Centralization",
+    "rule_summary": "In the endgame, the King transforms from a liability that needs shielding into a powerful offensive attacking and defending piece.",
+    "practical_tip": "As soon as Queens and major pieces are traded, march the King towards the center immediately. A centralized King often decides equal pawn endings."
+  },
+  {
+    "principle_id": "opposition",
+    "name": "The Opposition",
+    "rule_summary": "Two Kings facing each other on the same rank, file, or diagonal with exactly one square between them. The player who does NOT have to move 'has the opposition'.",
+    "practical_tip": "Having the opposition forces the enemy King to step aside, allowing your King to outflank and penetrate behind enemy pawns."
+  },
+  {
+    "principle_id": "rule_of_the_square",
+    "name": "Rule of the Square (Passed Pawns)",
+    "rule_summary": "A geometric rule to determine if a defending King can catch an unopposed passed pawn without calculation.",
+    "practical_tip": "Draw a square whose side equals the distance from the pawn to its promotion square. If the defending King can step inside this square on its turn, it can catch the pawn; otherwise, the pawn promotes."
+  },
+  {
+    "principle_id": "lucena_position",
+    "name": "Lucena Position (Building a Bridge)",
+    "rule_summary": "The winning technique in Rook + Pawn vs Rook endgames where the attacking pawn is on the 7th rank with its King in front of it.",
+    "practical_tip": "Use the Rook on the 4th rank to shield the King from checks (the 'bridge') as the King steps out from the promotion square."
+  },
+  {
+    "principle_id": "philidor_defense",
+    "name": "Philidor Defense (3rd/6th Rank Cutoff)",
+    "rule_summary": "The foundational drawing technique in Rook + Pawn vs Rook endgames.",
+    "practical_tip": "Keep your defending Rook on the 6th rank (or 3rd rank for Black) to prevent the enemy King from advancing. When the pawn advances, immediately move the Rook to the far back rank to deliver endless checks from behind."
+  },
+  {
+    "principle_id": "tarrasch_rule",
+    "name": "Tarrasch Rule (Rook Activity)",
+    "rule_summary": "Rooks belong behind passed pawns — whether they are your own or the opponent's.",
+    "practical_tip": "Behind your own passed pawn, the Rook supports its advance while gaining scope; behind the enemy's passed pawn, it maintains pressure as the pawn advances."
+  },
+  {
+    "principle_id": "fortress",
+    "name": "Fortress Recognition",
+    "rule_summary": "A defensive setup where a player with a material deficit constructs an impenetrable barrier that the opponent cannot breach.",
+    "practical_tip": "Lock the pawn structure, seal files, and place minor pieces or the King on blockade squares where no sacrifices can make progress."
+  }
+]

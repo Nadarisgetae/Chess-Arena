@@ -1,0 +1,72 @@
+[
+  {
+    "motif_id": "pin_absolute",
+    "name": "Absolute Pin",
+    "definition": "A piece is pinned to the King along a rank, file, or diagonal. It is illegal for the pinned piece to move because doing so would expose the King to check.",
+    "tactical_cue": "Look for an enemy King aligned behind an enemy piece on an open file or diagonal with a Rook, Bishop, or Queen.",
+    "remedy_advice": "Step the King off the danger diagonal, interpose a defending piece, or add defense to the pinned piece before the opponent attacks it again with a pawn."
+  },
+  {
+    "motif_id": "pin_relative",
+    "name": "Relative Pin",
+    "definition": "A piece is pinned to a higher-value piece (such as the Queen or Rook). Moving the pinned piece is legal but typically causes fatal material loss.",
+    "tactical_cue": "Unprotected Queen or Rook standing behind a minor piece or pawn on an open diagonal or file.",
+    "remedy_advice": "Move the higher-value piece away, break the pin with a counter-attack with check, or neutralize the pinning piece."
+  },
+  {
+    "motif_id": "fork_knight",
+    "name": "Knight Fork",
+    "definition": "A single Knight attacks two or more valuable enemy pieces simultaneously (often King + Queen or King + Rook).",
+    "tactical_cue": "Two enemy pieces sitting on squares of the same color, separated by 2-3 squares where a Knight can land safely (e.g. c7, c2, f7, f2).",
+    "remedy_advice": "Never leave heavy pieces on the same square color within jumping range of an active enemy knight. Control key outpost squares."
+  },
+  {
+    "motif_id": "fork_pawn",
+    "name": "Pawn Fork",
+    "definition": "An advancing pawn simultaneously threatens two enemy minor pieces on adjacent diagonal squares.",
+    "tactical_cue": "Two enemy minor pieces resting on adjacent files on the same rank (e.g., c6 and e6 or c3 and e3).",
+    "remedy_advice": "Ensure minor pieces are not laterally placed without escape squares when an enemy pawn advance (like d4 or d5) can split them."
+  },
+  {
+    "motif_id": "skewer",
+    "name": "Skewer",
+    "definition": "An attack on a high-value piece (like King or Queen) that forces it to move aside, exposing a lower-value piece behind it to capture.",
+    "tactical_cue": "A valuable piece standing directly in front of another piece on an open rank, file, or diagonal.",
+    "remedy_advice": "Step the valuable piece to a square that simultaneously defends the piece behind it, or counter-attack with check."
+  },
+  {
+    "motif_id": "discovered_attack",
+    "name": "Discovered Attack & Check",
+    "definition": "Moving a piece unmasks a hidden line of attack from a friendly Queen, Rook, or Bishop against an enemy target.",
+    "tactical_cue": "A friendly piece standing directly in the line between your long-range piece and an enemy piece or King.",
+    "remedy_advice": "Move your targeted piece away or eliminate the unmasking piece immediately before it jumps with devastating tempo."
+  },
+  {
+    "motif_id": "deflection",
+    "name": "Deflection (Overloaded Defender)",
+    "definition": "Forcing an enemy piece to leave its defensive post so that another square, piece, or checkmate path becomes undefended.",
+    "tactical_cue": "A key enemy piece burdened with defending two critical squares or pieces at once.",
+    "remedy_advice": "Add a second defender to the overloaded square, or simplify by trading off the attacking pieces."
+  },
+  {
+    "motif_id": "back_rank_mate",
+    "name": "Back-Rank Weakness",
+    "definition": "A King trapped behind its own shield of pawns (e.g., f7-g7-h7 or f2-g2-h2) on the 1st or 8th rank delivered checkmate by a Rook or Queen.",
+    "tactical_cue": "Castled King with no 'luft' (escape square) and few defenders on the back rank.",
+    "remedy_advice": "Create 'luft' by advancing h3/g3 or ...h6/...g6 early. Keep at least one heavy piece or minor piece guarding the back rank."
+  },
+  {
+    "motif_id": "trapped_piece",
+    "name": "Trapped Piece",
+    "definition": "A piece that has wandered into enemy territory and has all its legal escape squares covered or captured.",
+    "tactical_cue": "Minor piece (especially bishop or knight) venturing deep into the opponent's flank without friendly pawn support (e.g. Bishop on a7 or a2).",
+    "remedy_advice": "Always maintain an escape retreat square or pawn break before committing pieces behind enemy lines."
+  },
+  {
+    "motif_id": "decoy",
+    "name": "Decoy / Attraction",
+    "definition": "Sacrificing a piece to lure an enemy piece (usually the King) onto a square where it can be subjected to a fatal tactic.",
+    "tactical_cue": "Luring an enemy piece onto a square that sets up a fork, skewer, or mating net.",
+    "remedy_advice": "Carefully calculate forcing moves and sacrifices before accepting free poisoned material."
+  }
+]

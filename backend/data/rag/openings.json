@@ -1,0 +1,92 @@
+[
+  {
+    "eco": "B20-B99",
+    "name": "Sicilian Defense",
+    "moves": "1.e4 c5",
+    "thematic_ideas": "Asymmetric fight for the center. Black trades a flank c-pawn for White's central d-pawn, creating an open c-file and queenside counterplay.",
+    "key_plans_white": "Rapid kingside development, open d-file control, aggressive pawn storms (f4/g4/h4) or piece sacrifices on d5/e6.",
+    "key_plans_black": "Pressure along the semi-open c-file, minority attack with ...a6 and ...b5, dynamic knight outpost on e5 or c4.",
+    "common_blunders": "Delaying kingside castling too long; neglecting central king safety; falling for Nd5 or Nf5 knight sacrifices."
+  },
+  {
+    "eco": "C50-C59",
+    "name": "Italian Game & Giuoco Piano",
+    "moves": "1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5",
+    "thematic_ideas": "Classical open game targeting the weak f7 square. White aims to control d4 and open lines against the uncastled black king.",
+    "key_plans_white": "Build a central pawn duo with c3 and d4, or play quiet Giuoco Pianissimo with d3, c3, Nbd2-f1-g3.",
+    "key_plans_black": "Counter-strike in the center with ...d6 or ...d5, pin White's knight with ...Bg4, maintain dark-squared bishop active on c5/b6.",
+    "common_blunders": "Premature knight incursions before castling; allowing White a mobile d4/e4 pawn center; neglecting the f7 diagonal."
+  },
+  {
+    "eco": "C60-C99",
+    "name": "Ruy Lopez (Spanish Opening)",
+    "moves": "1.e4 e5 2.Nf3 Nc6 3.Bb5",
+    "thematic_ideas": "Indirect pressure on Black's e5 pawn by attacking its defender on c6. One of the deepest strategic openings in chess.",
+    "key_plans_white": "Prepare c3 and d4, maneuver the bishop pair via Bc4/Bb3, reroute Nbd2-f1-g3, maintain lasting central pressure.",
+    "key_plans_black": "Break the pin with ...a6, expand with ...b5, reinforce e5 with ...d6, anchor knight on a5 or d7.",
+    "common_blunders": "Allowing the e5 pawn to collapse prematurely; passive bishop on e7 trapped by White's d4 thrust."
+  },
+  {
+    "eco": "C00-C19",
+    "name": "French Defense",
+    "moves": "1.e4 e6 2.d4 d5",
+    "thematic_ideas": "Solid but slightly cramped counter-attacking structure. Black challenges d4 immediately while accepting a bad light-squared bishop.",
+    "key_plans_white": "Advance e5 to lock Black's kingside, attack along the f-file, exploit space advantage.",
+    "key_plans_black": "Undermine White's pawn chain with ...c5, ...f6, pressure the base pawn at d4 with ...Nc6 and ...Qb6.",
+    "common_blunders": "Failing to activate the c8 light-squared bishop; allowing White a free mating attack on the h7/f7 squares."
+  },
+  {
+    "eco": "B10-B19",
+    "name": "Caro-Kann Defense",
+    "moves": "1.e4 c6 2.d4 d5",
+    "thematic_ideas": "Extremely resilient pawn structure where Black prepares ...d5 without locking in the light-squared bishop.",
+    "key_plans_white": "Gain space in Advance variation (3.e5) or build active piece play in Open variations (3.Nc3 dxe4 4.Nxe4).",
+    "key_plans_black": "Develop bishop to f5 or g4 before playing ...e6, target White's advanced pawns with ...c5, reach favorable endgames.",
+    "common_blunders": "Lagging in piece development; allowing White a devastating king hunt if Black plays ...e6 before developing the c8 bishop."
+  },
+  {
+    "eco": "D06-D69",
+    "name": "Queen's Gambit",
+    "moves": "1.d4 d5 2.c4",
+    "thematic_ideas": "Offering a flank c-pawn to establish a dominant classical pawn center (d4 and e4).",
+    "key_plans_white": "Regain the c4 pawn with e3/e4 and Bxc4, control the c-file, execute the minority attack (a4-b4-b5).",
+    "key_plans_black": "QGD: hold e5/d5 firmly with ...e6 and ...c6; QGA: surrender center temporarily to strike back with ...c5 and rapid piece activity.",
+    "common_blunders": "Greedily trying to hold on to the gambited c4 pawn with ...b5; suffering from an isolated, blockaded d5 pawn."
+  },
+  {
+    "eco": "E60-E99",
+    "name": "King's Indian Defense",
+    "moves": "1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6",
+    "thematic_ideas": "Hypermodern defense where Black allows White full central control, preparing a violent kingside pawn assault with ...f5.",
+    "key_plans_white": "Expand on the queenside (c5, b4, Ba6), open the c-file, breakthrough before Black's kingside attack lands.",
+    "key_plans_black": "Lock the center with ...e5, march f-pawn and g-pawn with ...f5, ...f4, ...g5, checkmate White's king.",
+    "common_blunders": "Opening the center prematurely; defending passively on the queenside instead of pursuing the kingside mating attack."
+  },
+  {
+    "eco": "A10-A39",
+    "name": "English Opening",
+    "moves": "1.c4",
+    "thematic_ideas": "Flank opening fighting for the d5 square from the wing. Often transposes into reversed Sicilian or Catalan structures.",
+    "key_plans_white": "Fianchetto the king's bishop (g3, Bg2), control light squares, expand with b4/a4 on the queenside.",
+    "key_plans_black": "Establish a symmetrical formation (...c5) or grab central space with ...e5 and ...d5.",
+    "common_blunders": "Neglecting central piece development while pushing too many flank pawns."
+  },
+  {
+    "eco": "D02",
+    "name": "London System",
+    "moves": "1.d4 d5 2.Bf4 / 2.Nf3 & 3.Bf4",
+    "thematic_ideas": "Solid, universal setup for White developing the dark-squared bishop outside the pawn chain before playing e3.",
+    "key_plans_white": "Anchor a knight on e5, support with f4, swing queen to h5/f3 for a direct kingside attack.",
+    "key_plans_black": "Challenge White's bishop with ...Bd6 or ...Nh5, strike the center with ...c5, pressure b2 with ...Qb6.",
+    "common_blunders": "Allowing Black's ...c5 and ...Qb6 to win the unprotected b2 pawn; playing automatically without adjusting to Black's setup."
+  },
+  {
+    "eco": "B01",
+    "name": "Scandinavian Defense",
+    "moves": "1.e4 d5",
+    "thematic_ideas": "Direct counter to 1.e4 forcing an open center on move 1. White gains tempos attacking Black's early queen.",
+    "key_plans_white": "Develop rapidly with Nc3, d4, Bc4/Bf4, exploiting lead in development and open lines.",
+    "key_plans_black": "Retreat Queen safely to a5, d6, or d8, set up a solid Caro-Kann-like pawn shell (...c6, ...e6), develop bishops cleanly.",
+    "common_blunders": "Wandering with the Queen across the board while White develops all minor pieces."
+  }
+]

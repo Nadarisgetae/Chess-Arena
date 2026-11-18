@@ -19,6 +19,7 @@ from backend.database import init_db
 from backend.routes.engine import router as engine_router
 from backend.routes.game import router as game_router
 from backend.routes.coach import router as coach_router
+from backend.routes.vision import router as vision_router
 
 
 @asynccontextmanager
@@ -53,6 +54,7 @@ app.add_middleware(
 app.include_router(engine_router, prefix="/api")
 app.include_router(game_router, prefix="/api")
 app.include_router(coach_router, prefix="/api")
+app.include_router(vision_router, prefix="/api")
 
 
 # ── Static Frontend ────────────────────────────────────────────────────────────

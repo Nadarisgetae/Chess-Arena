@@ -22,6 +22,7 @@ import chess.engine
 from backend.engine_service import _find_stockfish  # reuse existing discovery
 from backend.database import get_db
 from backend.key_rotator import KeyRotator, load_keys_from_env_or_file
+from backend.rag_service import get_rag_knowledge_base
 import threading
 import asyncio
 
@@ -261,12 +262,30 @@ async def get_coach_explanation(analysis: dict) -> str:
             pass  # fallback if db missing
 
     canned = build_coach_summary(analysis)
+    rag_kb = get_rag_knowledge_base()
+    rag_context = rag_kb.retrieve_context(analysis)
+
     # 2. Try LLM
     rotator = get_rotator()
     if rotator:
         prompt = [
-            {"role": "system", "content": "You are a concise, encouraging chess coach. Do not hallucinate moves or evaluations. Ground your explanation in the provided Stockfish analysis."},
-            {"role": "user", "content": f"Explain this move in 1-3 sentences based on this analysis:\n{canned}\nFEN: {fen}\nMove: {move_san}"}
+            {
+                "role": "system",
+                "content": (
+                    "You are a concise, encouraging chess coach. Do not hallucinate moves or evaluations. "
+                    "Ground your explanation in the provided Stockfish analysis and the retrieved chess concept."
+                ),
+            },
+            {
+                "role": "user",
+                "content": (
+                    f"Position FEN: {fen}\n"
+                    f"Move Played: {move_san}\n"
+                    f"Stockfish Analysis: {canned}\n"
+                    f"Chess Principle / Opening Theory: {rag_context}\n"
+                    "Explain this move and the relevant chess principle in 1-3 clear sentences."
+                ),
+            },
         ]
         loop = asyncio.get_running_loop()
         llm_response = await loop.run_in_executor(None, rotator.call_llm, prompt)
