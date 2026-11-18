@@ -69,16 +69,6 @@ app.include_router(vision_router, prefix="/api")
 app.include_router(analytics_router, prefix="/api")
 
 
-# ── Static Frontend ────────────────────────────────────────────────────────────
-_frontend = Path(__file__).parent.parent / "frontend"
-if _frontend.exists():
-    app.mount("/static", StaticFiles(directory=str(_frontend)), name="static")
-
-    @app.get("/", include_in_schema=False)
-    async def serve_frontend():
-        return FileResponse(str(_frontend / "index.html"))
-
-
 # ── Health & Metrics ───────────────────────────────────────────────────────────
 @app.get("/health", tags=["Meta"])
 async def health():
@@ -87,3 +77,10 @@ async def health():
 @app.get("/metrics", response_class=PlainTextResponse, tags=["Monitoring"])
 async def metrics():
     return generate_prometheus_metrics()
+
+
+# ── Static Frontend ────────────────────────────────────────────────────────────
+_frontend = Path(__file__).parent.parent / "frontend"
+if _frontend.exists():
+    # Mount at root with html=True so /, /style.css, /app.js all resolve cleanly
+    app.mount("/", StaticFiles(directory=str(_frontend), html=True), name="frontend")
