@@ -1,0 +1,1086 @@
+{
+  "timestamp": 1795029529.7540882,
+  "date_str": "2026-11-19 00:48:49",
+  "search_benchmarks": {
+    "average_branching_factor": 29.5,
+    "depth_summary": {
+      "depth_1": {
+        "mean_latency_ms": 4.084,
+        "median_latency_ms": 4.129,
+        "std_latency_ms": 2.759,
+        "min_latency_ms": 0.36,
+        "max_latency_ms": 12.047,
+        "mean_nodes": 30.5,
+        "mean_cutoffs": 0
+      },
+      "depth_2": {
+        "mean_latency_ms": 18.537,
+        "median_latency_ms": 18.621,
+        "std_latency_ms": 9.139,
+        "min_latency_ms": 1.379,
+        "max_latency_ms": 36.4,
+        "mean_nodes": 140.2,
+        "mean_cutoffs": 27.1
+      },
+      "depth_3": {
+        "mean_latency_ms": 283.945,
+        "median_latency_ms": 239.645,
+        "std_latency_ms": 208.073,
+        "min_latency_ms": 7.092,
+        "max_latency_ms": 630.012,
+        "mean_nodes": 2210.1,
+        "mean_cutoffs": 166.9
+      }
+    },
+    "positions": [
+      {
+        "id": "open_01",
+        "name": "Starting Position",
+        "category": "Opening",
+        "branching_factor": 20,
+        "depths": {
+          "depth_1": {
+            "depth": 1,
+            "latency_ms": 2.935,
+            "nodes": 21,
+            "cutoffs": 0,
+            "best_move": "e2e4",
+            "score_cp": 25.0
+          },
+          "depth_2": {
+            "depth": 2,
+            "latency_ms": 36.4,
+            "nodes": 309,
+            "cutoffs": 17,
+            "best_move": "e2e4",
+            "score_cp": 0.0
+          },
+          "depth_3": {
+            "depth": 3,
+            "latency_ms": 575.202,
+            "nodes": 5063,
+            "cutoffs": 252,
+            "best_move": "e2e4",
+            "score_cp": 25.0
+          }
+        }
+      },
+      {
+        "id": "open_02",
+        "name": "Sicilian Defense (Najdorf)",
+        "category": "Opening",
+        "branching_factor": 43,
+        "depths": {
+          "depth_1": {
+            "depth": 1,
+            "latency_ms": 5.119,
+            "nodes": 44,
+            "cutoffs": 0,
+            "best_move": "f1a6",
+            "score_cp": 140.0
+          },
+          "depth_2": {
+            "depth": 2,
+            "latency_ms": 31.166,
+            "nodes": 239,
+            "cutoffs": 38,
+            "best_move": "f1c4",
+            "score_cp": -90.0
+          },
+          "depth_3": {
+            "depth": 3,
+            "latency_ms": 608.636,
+            "nodes": 3998,
+            "cutoffs": 273,
+            "best_move": "d1f3",
+            "score_cp": 160.0
+          }
+        }
+      },
+      {
+        "id": "open_03",
+        "name": "Ruy Lopez (Closed)",
+        "category": "Opening",
+        "branching_factor": 30,
+        "depths": {
+          "depth_1": {
+            "depth": 1,
+            "latency_ms": 3.639,
+            "nodes": 31,
+            "cutoffs": 0,
+            "best_move": "f6e4",
+            "score_cp": -150.0
+          },
+          "depth_2": {
+            "depth": 2,
+            "latency_ms": 22.363,
+            "nodes": 168,
+            "cutoffs": 26,
+            "best_move": "d7d5",
+            "score_cp": 115.0
+          },
+          "depth_3": {
+            "depth": 3,
+            "latency_ms": 417.117,
+            "nodes": 3362,
+            "cutoffs": 309,
+            "best_move": "c6a5",
+            "score_cp": -190.0
+          }
+        }
+      },
+      {
+        "id": "open_04",
+        "name": "French Defense (Winawer)",
+        "category": "Opening",
+        "branching_factor": 33,
+        "depths": {
+          "depth_1": {
+            "depth": 1,
+            "latency_ms": 4.186,
+            "nodes": 34,
+            "cutoffs": 0,
+            "best_move": "e4d5",
+            "score_cp": 150.0
+          },
+          "depth_2": {
+            "depth": 2,
+            "latency_ms": 17.645,
+            "nodes": 110,
+            "cutoffs": 31,
+            "best_move": "f1b5",
+            "score_cp": 15.0
+          },
+          "depth_3": {
+            "depth": 3,
+            "latency_ms": 98.377,
+            "nodes": 658,
+            "cutoffs": 73,
+            "best_move": "f1b5",
+            "score_cp": 140.0
+          }
+        }
+      },
+      {
+        "id": "open_05",
+        "name": "Queen's Gambit Declined",
+        "category": "Opening",
+        "branching_factor": 33,
+        "depths": {
+          "depth_1": {
+            "depth": 1,
+            "latency_ms": 4.259,
+            "nodes": 34,
+            "cutoffs": 0,
+            "best_move": "c3d5",
+            "score_cp": 140.0
+          },
+          "depth_2": {
+            "depth": 2,
+            "latency_ms": 18.645,
+            "nodes": 136,
+            "cutoffs": 31,
+            "best_move": "c4d5",
+            "score_cp": -10.0
+          },
+          "depth_3": {
+            "depth": 3,
+            "latency_ms": 194.385,
+            "nodes": 1454,
+            "cutoffs": 121,
+            "best_move": "c1g5",
+            "score_cp": 245.0
+          }
+        }
+      },
+      {
+        "id": "mid_01",
+        "name": "Tactical Center Clash",
+        "category": "Middlegame",
+        "branching_factor": 37,
+        "depths": {
+          "depth_1": {
+            "depth": 1,
+            "latency_ms": 8.737,
+            "nodes": 38,
+            "cutoffs": 0,
+            "best_move": "c3d5",
+            "score_cp": 240.0
+          },
+          "depth_2": {
+            "depth": 2,
+            "latency_ms": 24.499,
+            "nodes": 145,
+            "cutoffs": 35,
+            "best_move": "c4d5",
+            "score_cp": 90.0
+          },
+          "depth_3": {
+            "depth": 3,
+            "latency_ms": 368.106,
+            "nodes": 2779,
+            "cutoffs": 166,
+            "best_move": "c1g5",
+            "score_cp": 330.0
+          }
+        }
+      },
+      {
+        "id": "mid_02",
+        "name": "Isolated Queen Pawn (IQP)",
+        "category": "Middlegame",
+        "branching_factor": 47,
+        "depths": {
+          "depth_1": {
+            "depth": 1,
+            "latency_ms": 5.833,
+            "nodes": 48,
+            "cutoffs": 0,
+            "best_move": "d4c5",
+            "score_cp": 115.0
+          },
+          "depth_2": {
+            "depth": 2,
+            "latency_ms": 17.093,
+            "nodes": 125,
+            "cutoffs": 45,
+            "best_move": "d4c5",
+            "score_cp": -5.0
+          },
+          "depth_3": {
+            "depth": 3,
+            "latency_ms": 284.905,
+            "nodes": 2367,
+            "cutoffs": 99,
+            "best_move": "f4g5",
+            "score_cp": 210.0
+          }
+        }
+      },
+      {
+        "id": "mid_03",
+        "name": "Opposite Castling Attack",
+        "category": "Middlegame",
+        "branching_factor": 33,
+        "depths": {
+          "depth_1": {
+            "depth": 1,
+            "latency_ms": 3.726,
+            "nodes": 34,
+            "cutoffs": 0,
+            "best_move": "f3d5",
+            "score_cp": 360.0
+          },
+          "depth_2": {
+            "depth": 2,
+            "latency_ms": 23.604,
+            "nodes": 194,
+            "cutoffs": 30,
+            "best_move": "f3d5",
+            "score_cp": -10.0
+          },
+          "depth_3": {
+            "depth": 3,
+            "latency_ms": 154.701,
+            "nodes": 1370,
+            "cutoffs": 132,
+            "best_move": "d4c6",
+            "score_cp": 335.0
+          }
+        }
+      },
+      {
+        "id": "mid_04",
+        "name": "King's Indian Closed Center",
+        "category": "Middlegame",
+        "branching_factor": 34,
+        "depths": {
+          "depth_1": {
+            "depth": 1,
+            "latency_ms": 4.072,
+            "nodes": 35,
+            "cutoffs": 0,
+            "best_move": "c3d5",
+            "score_cp": 130.0
+          },
+          "depth_2": {
+            "depth": 2,
+            "latency_ms": 32.519,
+            "nodes": 273,
+            "cutoffs": 30,
+            "best_move": "e3e4",
+            "score_cp": -135.0
+          },
+          "depth_3": {
+            "depth": 3,
+            "latency_ms": 630.012,
+            "nodes": 4494,
+            "cutoffs": 453,
+            "best_move": "e2d3",
+            "score_cp": 125.0
+          }
+        }
+      },
+      {
+        "id": "mid_05",
+        "name": "Open File Tension",
+        "category": "Middlegame",
+        "branching_factor": 38,
+        "depths": {
+          "depth_1": {
+            "depth": 1,
+            "latency_ms": 5.501,
+            "nodes": 39,
+            "cutoffs": 0,
+            "best_move": "f3e5",
+            "score_cp": 150.0
+          },
+          "depth_2": {
+            "depth": 2,
+            "latency_ms": 21.089,
+            "nodes": 118,
+            "cutoffs": 37,
+            "best_move": "c4f7",
+            "score_cp": -230.0
+          },
+          "depth_3": {
+            "depth": 3,
+            "latency_ms": 519.667,
+            "nodes": 3105,
+            "cutoffs": 191,
+            "best_move": "d3d4",
+            "score_cp": 35.0
+          }
+        }
+      },
+      {
+        "id": "end_01",
+        "name": "Lucena Position (R+P vs R)",
+        "category": "Endgame",
+        "branching_factor": 16,
+        "depths": {
+          "depth_1": {
+            "depth": 1,
+            "latency_ms": 1.259,
+            "nodes": 17,
+            "cutoffs": 0,
+            "best_move": "b8a8",
+            "score_cp": 100.0
+          },
+          "depth_2": {
+            "depth": 2,
+            "latency_ms": 13.418,
+            "nodes": 89,
+            "cutoffs": 15,
+            "best_move": "b8a8",
+            "score_cp": 90.0
+          },
+          "depth_3": {
+            "depth": 3,
+            "latency_ms": 93.412,
+            "nodes": 991,
+            "cutoffs": 64,
+            "best_move": "h1h5",
+            "score_cp": 115.0
+          }
+        }
+      },
+      {
+        "id": "end_02",
+        "name": "Philidor Position (Drawn Rook Ending)",
+        "category": "Endgame",
+        "branching_factor": 14,
+        "depths": {
+          "depth_1": {
+            "depth": 1,
+            "latency_ms": 1.058,
+            "nodes": 15,
+            "cutoffs": 0,
+            "best_move": "e2e5",
+            "score_cp": 540.0
+          },
+          "depth_2": {
+            "depth": 2,
+            "latency_ms": 3.121,
+            "nodes": 32,
+            "cutoffs": 13,
+            "best_move": "e2e5",
+            "score_cp": 540.0
+          },
+          "depth_3": {
+            "depth": 3,
+            "latency_ms": 16.484,
+            "nodes": 236,
+            "cutoffs": 15,
+            "best_move": "e2e5",
+            "score_cp": 540.0
+          }
+        }
+      },
+      {
+        "id": "end_03",
+        "name": "King & Pawn Opposition",
+        "category": "Endgame",
+        "branching_factor": 4,
+        "depths": {
+          "depth_1": {
+            "depth": 1,
+            "latency_ms": 0.36,
+            "nodes": 5,
+            "cutoffs": 0,
+            "best_move": "e4d4",
+            "score_cp": 125.0
+          },
+          "depth_2": {
+            "depth": 2,
+            "latency_ms": 1.379,
+            "nodes": 19,
+            "cutoffs": 2,
+            "best_move": "e4d4",
+            "score_cp": 125.0
+          },
+          "depth_3": {
+            "depth": 3,
+            "latency_ms": 7.092,
+            "nodes": 106,
+            "cutoffs": 9,
+            "best_move": "e4d4",
+            "score_cp": 140.0
+          }
+        }
+      },
+      {
+        "id": "end_04",
+        "name": "Same-Colored Bishops",
+        "category": "Endgame",
+        "branching_factor": 15,
+        "depths": {
+          "depth_1": {
+            "depth": 1,
+            "latency_ms": 1.264,
+            "nodes": 16,
+            "cutoffs": 0,
+            "best_move": "e4g6",
+            "score_cp": 0.0
+          },
+          "depth_2": {
+            "depth": 2,
+            "latency_ms": 11.812,
+            "nodes": 151,
+            "cutoffs": 11,
+            "best_move": "f3f4",
+            "score_cp": -90.0
+          },
+          "depth_3": {
+            "depth": 3,
+            "latency_ms": 50.158,
+            "nodes": 597,
+            "cutoffs": 94,
+            "best_move": "f3f4",
+            "score_cp": -10.0
+          }
+        }
+      },
+      {
+        "id": "end_05",
+        "name": "Rook & Multi-Pawn Race",
+        "category": "Endgame",
+        "branching_factor": 21,
+        "depths": {
+          "depth_1": {
+            "depth": 1,
+            "latency_ms": 1.817,
+            "nodes": 22,
+            "cutoffs": 0,
+            "best_move": "e3e5",
+            "score_cp": 25.0
+          },
+          "depth_2": {
+            "depth": 2,
+            "latency_ms": 8.058,
+            "nodes": 83,
+            "cutoffs": 19,
+            "best_move": "e3e5",
+            "score_cp": -75.0
+          },
+          "depth_3": {
+            "depth": 3,
+            "latency_ms": 109.21,
+            "nodes": 1240,
+            "cutoffs": 103,
+            "best_move": "e3e5",
+            "score_cp": 25.0
+          }
+        }
+      },
+      {
+        "id": "tac_01",
+        "name": "Knight Fork Tactic",
+        "category": "Tactical",
+        "branching_factor": 40,
+        "depths": {
+          "depth_1": {
+            "depth": 1,
+            "latency_ms": 4.87,
+            "nodes": 41,
+            "cutoffs": 0,
+            "best_move": "b5c6",
+            "score_cp": 210.0
+          },
+          "depth_2": {
+            "depth": 2,
+            "latency_ms": 19.435,
+            "nodes": 110,
+            "cutoffs": 39,
+            "best_move": "b5c6",
+            "score_cp": -140.0
+          },
+          "depth_3": {
+            "depth": 3,
+            "latency_ms": 395.113,
+            "nodes": 2913,
+            "cutoffs": 245,
+            "best_move": "d1d5",
+            "score_cp": 140.0
+          }
+        }
+      },
+      {
+        "id": "tac_02",
+        "name": "Absolute Pin on Queen",
+        "category": "Tactical",
+        "branching_factor": 40,
+        "depths": {
+          "depth_1": {
+            "depth": 1,
+            "latency_ms": 4.798,
+            "nodes": 41,
+            "cutoffs": 0,
+            "best_move": "b5c6",
+            "score_cp": 335.0
+          },
+          "depth_2": {
+            "depth": 2,
+            "latency_ms": 18.597,
+            "nodes": 117,
+            "cutoffs": 39,
+            "best_move": "b5c6",
+            "score_cp": -15.0
+          },
+          "depth_3": {
+            "depth": 3,
+            "latency_ms": 193.425,
+            "nodes": 1531,
+            "cutoffs": 188,
+            "best_move": "d1e2",
+            "score_cp": 340.0
+          }
+        }
+      },
+      {
+        "id": "tac_03",
+        "name": "Back-Rank Vulnerability",
+        "category": "Tactical",
+        "branching_factor": 19,
+        "depths": {
+          "depth_1": {
+            "depth": 1,
+            "latency_ms": 1.59,
+            "nodes": 20,
+            "cutoffs": 0,
+            "best_move": "e2e5",
+            "score_cp": 25.0
+          },
+          "depth_2": {
+            "depth": 2,
+            "latency_ms": 9.069,
+            "nodes": 110,
+            "cutoffs": 16,
+            "best_move": "e2e5",
+            "score_cp": 0.0
+          },
+          "depth_3": {
+            "depth": 3,
+            "latency_ms": 119.65,
+            "nodes": 1441,
+            "cutoffs": 205,
+            "best_move": "e2e1",
+            "score_cp": 15.0
+          }
+        }
+      },
+      {
+        "id": "tac_04",
+        "name": "Greek Gift Sacrifice Setup",
+        "category": "Tactical",
+        "branching_factor": 38,
+        "depths": {
+          "depth_1": {
+            "depth": 1,
+            "latency_ms": 4.615,
+            "nodes": 39,
+            "cutoffs": 0,
+            "best_move": "c3d5",
+            "score_cp": 480.0
+          },
+          "depth_2": {
+            "depth": 2,
+            "latency_ms": 17.535,
+            "nodes": 138,
+            "cutoffs": 35,
+            "best_move": "f3d4",
+            "score_cp": 205.0
+          },
+          "depth_3": {
+            "depth": 3,
+            "latency_ms": 516.238,
+            "nodes": 3709,
+            "cutoffs": 214,
+            "best_move": "c1f4",
+            "score_cp": 480.0
+          }
+        }
+      },
+      {
+        "id": "tac_05",
+        "name": "Discovered Attack Tension",
+        "category": "Tactical",
+        "branching_factor": 35,
+        "depths": {
+          "depth_1": {
+            "depth": 1,
+            "latency_ms": 12.047,
+            "nodes": 36,
+            "cutoffs": 0,
+            "best_move": "c3d5",
+            "score_cp": 240.0
+          },
+          "depth_2": {
+            "depth": 2,
+            "latency_ms": 23.298,
+            "nodes": 139,
+            "cutoffs": 33,
+            "best_move": "c4d5",
+            "score_cp": 100.0
+          },
+          "depth_3": {
+            "depth": 3,
+            "latency_ms": 327.006,
+            "nodes": 2787,
+            "cutoffs": 133,
+            "best_move": "c4d5",
+            "score_cp": 240.0
+          }
+        }
+      }
+    ]
+  },
+  "adaptive_difficulty_benchmarks": {
+    "Novice": {
+      "target_skill": 2,
+      "settling_game": 4,
+      "final_mean_skill": 3,
+      "error_to_target": 1,
+      "trajectory": [
+        {
+          "game": 1,
+          "offered_skill": 10,
+          "game_acpl": 82.8,
+          "result_score": 0.0,
+          "predicted_skill": 2,
+          "next_skill": 7
+        },
+        {
+          "game": 2,
+          "offered_skill": 7,
+          "game_acpl": 76.5,
+          "result_score": 1.0,
+          "predicted_skill": 2,
+          "next_skill": 5
+        },
+        {
+          "game": 3,
+          "offered_skill": 5,
+          "game_acpl": 85.9,
+          "result_score": 1.0,
+          "predicted_skill": 2,
+          "next_skill": 4
+        },
+        {
+          "game": 4,
+          "offered_skill": 4,
+          "game_acpl": 78.6,
+          "result_score": 0.0,
+          "predicted_skill": 2,
+          "next_skill": 3
+        },
+        {
+          "game": 5,
+          "offered_skill": 3,
+          "game_acpl": 88.3,
+          "result_score": 0.5,
+          "predicted_skill": 2,
+          "next_skill": 3
+        },
+        {
+          "game": 6,
+          "offered_skill": 3,
+          "game_acpl": 82.2,
+          "result_score": 1.0,
+          "predicted_skill": 2,
+          "next_skill": 3
+        },
+        {
+          "game": 7,
+          "offered_skill": 3,
+          "game_acpl": 88.5,
+          "result_score": 0.0,
+          "predicted_skill": 2,
+          "next_skill": 3
+        },
+        {
+          "game": 8,
+          "offered_skill": 3,
+          "game_acpl": 69.8,
+          "result_score": 0.0,
+          "predicted_skill": 2,
+          "next_skill": 3
+        },
+        {
+          "game": 9,
+          "offered_skill": 3,
+          "game_acpl": 83.3,
+          "result_score": 1.0,
+          "predicted_skill": 2,
+          "next_skill": 3
+        },
+        {
+          "game": 10,
+          "offered_skill": 3,
+          "game_acpl": 84.4,
+          "result_score": 1.0,
+          "predicted_skill": 2,
+          "next_skill": 3
+        },
+        {
+          "game": 11,
+          "offered_skill": 3,
+          "game_acpl": 80.2,
+          "result_score": 1.0,
+          "predicted_skill": 2,
+          "next_skill": 3
+        },
+        {
+          "game": 12,
+          "offered_skill": 3,
+          "game_acpl": 80.2,
+          "result_score": 0.0,
+          "predicted_skill": 2,
+          "next_skill": 3
+        },
+        {
+          "game": 13,
+          "offered_skill": 3,
+          "game_acpl": 95.4,
+          "result_score": 0.0,
+          "predicted_skill": 2,
+          "next_skill": 3
+        },
+        {
+          "game": 14,
+          "offered_skill": 3,
+          "game_acpl": 84.9,
+          "result_score": 1.0,
+          "predicted_skill": 2,
+          "next_skill": 3
+        },
+        {
+          "game": 15,
+          "offered_skill": 3,
+          "game_acpl": 88.6,
+          "result_score": 0.0,
+          "predicted_skill": 2,
+          "next_skill": 3
+        }
+      ]
+    },
+    "Club": {
+      "target_skill": 10,
+      "settling_game": 1,
+      "final_mean_skill": 10,
+      "error_to_target": 0,
+      "trajectory": [
+        {
+          "game": 1,
+          "offered_skill": 10,
+          "game_acpl": 33.2,
+          "result_score": 0.5,
+          "predicted_skill": 11,
+          "next_skill": 10
+        },
+        {
+          "game": 2,
+          "offered_skill": 10,
+          "game_acpl": 38.4,
+          "result_score": 0.5,
+          "predicted_skill": 11,
+          "next_skill": 10
+        },
+        {
+          "game": 3,
+          "offered_skill": 10,
+          "game_acpl": 45.3,
+          "result_score": 0.5,
+          "predicted_skill": 11,
+          "next_skill": 10
+        },
+        {
+          "game": 4,
+          "offered_skill": 10,
+          "game_acpl": 47.4,
+          "result_score": 0.0,
+          "predicted_skill": 10,
+          "next_skill": 10
+        },
+        {
+          "game": 5,
+          "offered_skill": 10,
+          "game_acpl": 29.7,
+          "result_score": 0.5,
+          "predicted_skill": 11,
+          "next_skill": 10
+        },
+        {
+          "game": 6,
+          "offered_skill": 10,
+          "game_acpl": 50.0,
+          "result_score": 0.0,
+          "predicted_skill": 10,
+          "next_skill": 10
+        },
+        {
+          "game": 7,
+          "offered_skill": 10,
+          "game_acpl": 40.5,
+          "result_score": 0.5,
+          "predicted_skill": 10,
+          "next_skill": 10
+        },
+        {
+          "game": 8,
+          "offered_skill": 10,
+          "game_acpl": 44.8,
+          "result_score": 0.5,
+          "predicted_skill": 10,
+          "next_skill": 10
+        },
+        {
+          "game": 9,
+          "offered_skill": 10,
+          "game_acpl": 44.9,
+          "result_score": 0.0,
+          "predicted_skill": 10,
+          "next_skill": 10
+        },
+        {
+          "game": 10,
+          "offered_skill": 10,
+          "game_acpl": 42.5,
+          "result_score": 0.0,
+          "predicted_skill": 10,
+          "next_skill": 10
+        },
+        {
+          "game": 11,
+          "offered_skill": 10,
+          "game_acpl": 41.6,
+          "result_score": 0.0,
+          "predicted_skill": 10,
+          "next_skill": 10
+        },
+        {
+          "game": 12,
+          "offered_skill": 10,
+          "game_acpl": 41.4,
+          "result_score": 0.0,
+          "predicted_skill": 10,
+          "next_skill": 10
+        },
+        {
+          "game": 13,
+          "offered_skill": 10,
+          "game_acpl": 40.1,
+          "result_score": 0.0,
+          "predicted_skill": 10,
+          "next_skill": 10
+        },
+        {
+          "game": 14,
+          "offered_skill": 10,
+          "game_acpl": 35.8,
+          "result_score": 1.0,
+          "predicted_skill": 10,
+          "next_skill": 10
+        },
+        {
+          "game": 15,
+          "offered_skill": 10,
+          "game_acpl": 43.5,
+          "result_score": 0.0,
+          "predicted_skill": 10,
+          "next_skill": 10
+        }
+      ]
+    },
+    "Master": {
+      "target_skill": 18,
+      "settling_game": 4,
+      "final_mean_skill": 17,
+      "error_to_target": 1,
+      "trajectory": [
+        {
+          "game": 1,
+          "offered_skill": 10,
+          "game_acpl": 20.3,
+          "result_score": 1.0,
+          "predicted_skill": 17,
+          "next_skill": 13
+        },
+        {
+          "game": 2,
+          "offered_skill": 13,
+          "game_acpl": 16.4,
+          "result_score": 1.0,
+          "predicted_skill": 17,
+          "next_skill": 15
+        },
+        {
+          "game": 3,
+          "offered_skill": 15,
+          "game_acpl": 19.8,
+          "result_score": 1.0,
+          "predicted_skill": 18,
+          "next_skill": 16
+        },
+        {
+          "game": 4,
+          "offered_skill": 16,
+          "game_acpl": 18.0,
+          "result_score": 0.5,
+          "predicted_skill": 18,
+          "next_skill": 17
+        },
+        {
+          "game": 5,
+          "offered_skill": 17,
+          "game_acpl": 19.6,
+          "result_score": 0.5,
+          "predicted_skill": 18,
+          "next_skill": 17
+        },
+        {
+          "game": 6,
+          "offered_skill": 17,
+          "game_acpl": 16.5,
+          "result_score": 1.0,
+          "predicted_skill": 18,
+          "next_skill": 17
+        },
+        {
+          "game": 7,
+          "offered_skill": 17,
+          "game_acpl": 15.4,
+          "result_score": 0.0,
+          "predicted_skill": 18,
+          "next_skill": 17
+        },
+        {
+          "game": 8,
+          "offered_skill": 17,
+          "game_acpl": 12.8,
+          "result_score": 1.0,
+          "predicted_skill": 18,
+          "next_skill": 17
+        },
+        {
+          "game": 9,
+          "offered_skill": 17,
+          "game_acpl": 13.9,
+          "result_score": 1.0,
+          "predicted_skill": 18,
+          "next_skill": 17
+        },
+        {
+          "game": 10,
+          "offered_skill": 17,
+          "game_acpl": 18.4,
+          "result_score": 1.0,
+          "predicted_skill": 18,
+          "next_skill": 17
+        },
+        {
+          "game": 11,
+          "offered_skill": 17,
+          "game_acpl": 22.7,
+          "result_score": 0.0,
+          "predicted_skill": 18,
+          "next_skill": 17
+        },
+        {
+          "game": 12,
+          "offered_skill": 17,
+          "game_acpl": 16.7,
+          "result_score": 1.0,
+          "predicted_skill": 18,
+          "next_skill": 17
+        },
+        {
+          "game": 13,
+          "offered_skill": 17,
+          "game_acpl": 15.5,
+          "result_score": 1.0,
+          "predicted_skill": 18,
+          "next_skill": 17
+        },
+        {
+          "game": 14,
+          "offered_skill": 17,
+          "game_acpl": 19.8,
+          "result_score": 0.0,
+          "predicted_skill": 18,
+          "next_skill": 17
+        },
+        {
+          "game": 15,
+          "offered_skill": 17,
+          "game_acpl": 19.9,
+          "result_score": 0.5,
+          "predicted_skill": 18,
+          "next_skill": 17
+        }
+      ]
+    }
+  },
+  "coach_caching_benchmarks": {
+    "tier1_deterministic_rag": {
+      "mean_ms": 0.661,
+      "median_ms": 0.629,
+      "std_ms": 0.102,
+      "p95_ms": 0.877
+    },
+    "tier2_sqlite_cache": {
+      "mean_ms": 1.283,
+      "median_ms": 1.254,
+      "std_ms": 0.199,
+      "p95_ms": 1.563
+    },
+    "tier3_llm_api": {
+      "mean_ms": 1188.2,
+      "median_ms": 1195.7,
+      "std_ms": 123.4,
+      "p95_ms": 1363.6
+    },
+    "speedup_factor_cache_vs_llm": 926.2,
+    "latency_reduction_pct": 99.89
+  }
+}

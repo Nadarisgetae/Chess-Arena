@@ -36,7 +36,7 @@ CREATE_GAMES = """
 CREATE TABLE IF NOT EXISTS games (
     id                  TEXT PRIMARY KEY,
     player_id           TEXT REFERENCES players(id),
-    mode                TEXT CHECK(mode IN ('play', 'coach', 'vision')) DEFAULT 'play',
+    mode                TEXT CHECK(mode IN ('play', 'coach', 'analytics')) DEFAULT 'play',
     pgn                 TEXT,
     result              TEXT,
     engine_skill_level  INTEGER DEFAULT 10,

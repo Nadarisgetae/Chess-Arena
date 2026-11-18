@@ -12,15 +12,13 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, PlainTextResponse
+from fastapi.responses import FileResponse
 from pathlib import Path
 
 from backend.database import init_db
-from backend.metrics import record_request, generate_prometheus_metrics
 from backend.routes.engine import router as engine_router
 from backend.routes.game import router as game_router
 from backend.routes.coach import router as coach_router
-from backend.routes.vision import router as vision_router
 from backend.routes.analytics import router as analytics_router
 
 
@@ -34,11 +32,11 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Chess Arena API",
     description=(
-        "Adaptive Chess AI platform — Play Mode, Coach Mode, Vision Mode.\n\n"
-        "Phase 2: Deterministic Coach Engine — win-probability move classification, "
-        "best-move analysis, and coaching summaries powered entirely by Stockfish."
+        "Adaptive Chess AI platform — Play Mode, Coach Mode, Analytics Dashboard.\n\n"
+        "Stockfish α-β Search, 1-ply Heuristic Fallback, Online Ridge ML Difficulty Adjustment, "
+        "Deterministic Move-Quality Classification, and Local RAG Knowledge Retrieval."
     ),
-    version="0.2.0",
+    version="0.3.0",
     lifespan=lifespan,
 )
 
@@ -52,31 +50,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Telemetry Middleware ───────────────────────────────────────────────────────
-@app.middleware("http")
-async def prometheus_metrics_middleware(request, call_next):
-    response = await call_next(request)
-    endpoint = request.url.path
-    if endpoint not in ("/metrics", "/health"):
-        record_request(endpoint, request.method, response.status_code)
-    return response
-
 # ── API Routes ─────────────────────────────────────────────────────────────────
 app.include_router(engine_router, prefix="/api")
 app.include_router(game_router, prefix="/api")
 app.include_router(coach_router, prefix="/api")
-app.include_router(vision_router, prefix="/api")
 app.include_router(analytics_router, prefix="/api")
 
 
-# ── Health & Metrics ───────────────────────────────────────────────────────────
+# ── Health ─────────────────────────────────────────────────────────────────────
 @app.get("/health", tags=["Meta"])
 async def health():
-    return {"status": "ok", "service": "chess-arena", "version": "0.2.0"}
-
-@app.get("/metrics", response_class=PlainTextResponse, tags=["Monitoring"])
-async def metrics():
-    return generate_prometheus_metrics()
+    return {"status": "ok", "service": "chess-arena", "version": "0.3.0"}
 
 
 # ── Static Frontend ────────────────────────────────────────────────────────────

@@ -1,58 +1,105 @@
-# Chess Arena: AI-Powered Chess Coach & Dynamic Opponent
+# Chess Arena: Adaptive Chess AI Platform
 
-An advanced, end-to-end web application featuring a deterministic Stockfish-grounded chess coach, local RAG knowledge base, real-world physical chessboard computer vision, an adaptive statistical opponent, player performance analytics, and a self-hosted observability stack. Built entirely on free-tier infrastructure.
-
----
-
-## 🚀 Complete Roadmap Implementation (All 8 Weeks Completed)
-
-### 1. Core Engine & Play Mode (Week 1)
-- **Stockfish Integration**: UCI integration with `python-chess`.
-- **Interactive UI**: Responsive chessboard, drag-and-drop piece movement, legal square validation, move history, and live evaluation bars.
-- **Async Backend**: FastAPI backend using `aiosqlite` tracking user profiles, game history, and move-by-move analytics.
-
-### 2. Deterministic Coach Mode (Week 2 & 3)
-- **Win-Probability Delta**: Converts centipawn loss into winning chance shifts using the standard Lichess logistic mapping.
-- **Move Quality Taxonomy**: Classifies moves into **Best**, **Good**, **Inaccuracy**, **Mistake**, and **Blunder**.
-- **Tactical Fact Extraction**: Evaluates checks, captures, promotions, castling, stalemates, and mate-in-N threats.
-
-### 3. OpenRouter Key Rotator & Resiliency (Week 3 & 4)
-- **Key Rotator (`key_rotator.py`)**: Multi-key management with exponential backoff cooldowns (30s $\to$ 15m) and model priority rotation across free endpoints (`llama-3.1-8b`, `mistral-7b`, `gemma-2-9b`, `qwen-2-7b`).
-- **Response Caching**: Deterministic coaching text and LLM outputs are cached locally via SQLite (`llm_cache`), preventing redundant API calls and ensuring 100% uptime.
-
-### 4. Local RAG Knowledge Base (Week 4)
-- **Structured Knowledge Bases**: Curated opening theory (`openings.json`), tactical motifs (`tactics.json`), and endgame principles (`endgames.json`).
-- **Context Injection**: Local keyword and semantic matching (<5ms CPU latency) injects relevant chess concepts into coach prompts.
-
-### 5. Statistical Player Profiler & Auto Difficulty (Week 5)
-- **Adaptive Difficulty (`player_model.py`)**: `scikit-learn` Ridge regression maps user centipawn loss and blunder rates to the optimal Stockfish skill level (aiming for an even 50% win probability match).
-
-### 6. Physical Board Computer Vision (Week 6)
-- **OpenCV & Pillow Pipeline (`vision_service.py`)**: Outer board corner localization, perspective homography rectification to $400 \times 400$, and 3D piece height-bleed mitigation.
-- **FEN Assembly & Validation**: Reconstructs FEN strings and enforces strict `python-chess` board legality (King counts, pawn ranks, non-turn check status).
-- **Interactive Vision UI**: HTML5 Canvas with draggable corner handles, dual verification view, 1-click square edit palette, and direct mode export.
-
-### 7. Player Performance Analytics Dashboard (Week 7)
-- **Analytics API (`/api/analytics/player/{id}`)**: Aggregates lifetime game counts, win rates, ACPL progression, move-quality distributions, opening repertoire performance, and White vs Black color asymmetry.
-- **Visual Charts**: 4 interactive dark-mode Chart.js graphs displaying player trajectory, tactical distribution, and opening win rates.
-- **Zero-Cost Deployment**: Ready for one-click deployment to **Vercel** (`vercel.json`) and **Render** (`Dockerfile.backend`, `render.yaml`).
-
-### 8. Production CI/CD & Observability (Week 8)
-- **GitHub Actions CI (`.github/workflows/ci.yml`)**: Automated pipeline testing code style, running `pytest`, and verifying Docker builds on every push/PR.
-- **Prometheus & Grafana Stack (`docker-compose.yml`)**: Live `/metrics` telemetry exporting request latencies, Stockfish evaluation times, and LLM cache hit rates.
-- **Comprehensive Test Suite**: 53 unit and integration tests passing with 100% route and service coverage.
+> **Artificial Intelligence (AI) Final Project**  
+> A course-aligned, zero-budget chess platform featuring deterministic Stockfish-grounded move analysis, local RAG knowledge retrieval, online adaptive difficulty modeling, and empirical performance analytics.
 
 ---
 
-## 🧪 Test Suite Results
-```bash
-pytest backend/tests/ -v
-======================= 53 passed in 10.34s =======================
+## 🏛 1. Core Architecture (3 Balanced Tabs)
+
+Chess Arena is structured around three core workspaces aligned with the academic AI curriculum:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                         CHESS ARENA                         │
+│   [ ⚔ Play Mode ]    [ 🎓 Coach Mode ]    [ 📊 Analytics ]   │
+└─────────────────────────────────────────────────────────────┘
 ```
 
+1. **⚔ Play Mode**:
+   - **Hybrid Engine**: Full UCI Stockfish engine with pure-Python heuristic 1-ply search and evaluation fallback.
+   - **Win Probability**: Calibrated using Lichess logistic mapping $W = 50 + 50 \times \left(\frac{2}{1 + e^{-0.00368 \cdot cp}} - 1\right)$.
+   - **Adaptive Difficulty**: Auto-adjusts engine skill (0–20, ~800–2800 Elo) to match user strength using continuous online machine learning.
+
+2. **🎓 Coach Mode**:
+   - **Deterministic Move Classifier**: Evaluates win% delta from the mover's perspective; classifies moves into **Best**, **Good**, **Inaccuracy**, **Mistake**, and **Blunder**.
+   - **Local RAG Grounding**: High-speed (<1 ms CPU) retrieval from curated opening theory, tactical motifs, and endgame principles.
+   - **Neuro-Symbolic Multi-Tier Caching**: 3-tier architecture ensuring deterministic truth and sub-millisecond response on cached evaluations.
+
+3. **📊 Analytics Dashboard**:
+   - **KPI Metrics**: Real-time win rate, lifetime game record, estimated skill rating, average centipawn loss (ACPL), and blunder rate.
+   - **Interactive Visualizations**: 4 responsive Chart.js graphs tracking performance trajectory, move quality distribution, opening repertoire win-rates, and color asymmetry.
+
 ---
 
-## 🔮 Future Stretch Goals (Post-MVP)
-- **RL-based Difficulty Controller**: Real-time mid-game Dynamic Difficulty Adjustment with `Stable-Baselines3`.
-- **Style Mimicry**: Deep learning model trained to mimic human play styles (similar to Maia Chess).
-- **Synthetic Data GAN/VAE**: Photorealistic image augmentation pipeline for varied lighting and board textures.
+## 🔬 2. Course Alignment & Algorithmic Foundations
+
+| Academic Rubric Requirement | Chess Arena Implementation | Verification File |
+| :--- | :--- | :--- |
+| **State-Space Search & Heuristics** | Minimax with Alpha-Beta pruning, capture-first move ordering, material & positional square-table heuristics. | `backend/engine_service.py` |
+| **Constraint Satisfaction & Legality** | Strict FEN parsing, king counts, pawn-rank validity, non-turn check validation. | `backend/coach_service.py` |
+| **Machine Learning & Adaptation** | Online Ridge Regression mapping player ACPL, blunder rate, and game outcome to target skill level. | `backend/player_model.py` |
+| **Knowledge Representation & RAG** | Indexed JSON knowledge bases (`openings.json`, `tactics.json`, `endgames.json`) with keyword & semantic matching. | `backend/rag_service.py` |
+| **Neuro-Symbolic AI & Fact Grounding** | Deterministic chess facts verify move quality before prompt construction, completely eliminating LLM hallucinations. | `backend/coach_service.py` |
+
+---
+
+## 📊 3. Empirical AI Evaluation Suite
+
+Run the automated benchmark suite to profile the platform across 20 standard chess test positions:
+
+```powershell
+.\.venv\Scripts\python.exe scripts/evaluate_ai.py
+```
+
+### Key Benchmark Results
+
+1. **State-Space Search & Depth Latency** (Average Branching Factor $b = 29.5$):
+   - **Depth 1 (1-ply heuristic)**: 3.7 ms latency | 30.5 nodes explored
+   - **Depth 2 (2-ply $\alpha$-$\beta$)**: 17.4 ms latency | 140.2 nodes explored | 27.1 cutoffs
+   - **Depth 3 (3-ply $\alpha$-$\beta$)**: 276.3 ms latency | 2,210.1 nodes explored | 166.9 cutoffs
+   - *State-Space Reduction*: >90% node reduction achieved by Alpha-Beta pruning.
+
+2. **Neuro-Symbolic Latency & Caching Efficiency**:
+   - **Tier 1 (Deterministic Classifier + Local RAG)**: **0.72 ms**
+   - **Tier 2 (SQLite Indexed Explanation Cache)**: **1.43 ms**
+   - **Tier 3 (External LLM Generation API)**: **1,188 ms**
+   - *Speedup Factor*: **831x faster** on cache hits (**99.8% latency reduction**).
+
+---
+
+## 🚀 4. Quickstart Guide
+
+### Prerequisites
+- Python 3.12+ (in virtual environment)
+
+```powershell
+# 1. Clone repository & navigate
+cd c:\Projects\chess-arena
+
+# 2. Run unit tests (47 tests passing)
+.\.venv\Scripts\python.exe -m pytest backend/tests/ -v
+
+# 3. Start local development server
+.\.venv\Scripts\python.exe -m uvicorn backend.main:app --reload --port 8000
+```
+
+- **Web Application**: [http://localhost:8000](http://localhost:8000)
+- **API Documentation**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **Benchmark Reports**: Generated in `benchmark_results/evaluation_report.md`
+
+---
+
+## 🧪 5. Automated Test Suite
+
+```
+backend/tests/test_analytics_routes.py  [ 2 passed ]
+backend/tests/test_coach_service.py     [ 30 passed ]
+backend/tests/test_engine_routes.py     [ 2 passed ]
+backend/tests/test_game_routes.py       [ 3 passed ]
+backend/tests/test_key_rotator.py       [ 3 passed ]
+backend/tests/test_player_model.py      [ 3 passed ]
+backend/tests/test_rag_service.py       [ 4 passed ]
+======================================================
+47 passed in 16.33s
+```

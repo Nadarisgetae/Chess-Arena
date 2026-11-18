@@ -58,15 +58,3 @@ async def test_engine_evaluate_endpoint():
         data = res.json()
         assert data["centipawns"] == 20
         assert data["win_pct"] == 52.0
-
-
-@pytest.mark.anyio
-async def test_prometheus_metrics_endpoint():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
-        res = await client.get("/metrics")
-        assert res.status_code == 200
-        content = res.text
-        assert "chess_arena_uptime_seconds" in content
-        assert "chess_arena_stockfish_eval_calls_total" in content
-        assert "chess_arena_llm_cache_hits_total" in content

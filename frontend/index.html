@@ -29,7 +29,6 @@
       <nav class="header-nav">
         <button class="nav-btn active" id="btn-play-mode">Play</button>
         <button class="nav-btn" id="btn-coach-mode">Coach <span class="badge new">New</span></button>
-        <button class="nav-btn" id="btn-vision-mode">Vision <span class="badge new">New</span></button>
         <button class="nav-btn" id="btn-analytics-mode">Analytics <span class="badge new">New</span></button>
       </nav>
       <div class="header-status" id="connection-status">
@@ -227,65 +226,6 @@
 
       </aside>
 
-      <!-- ── VISION MODE WORKSPACE ────────────────────────────── -->
-      <section class="vision-workspace glass hidden" id="vision-workspace">
-        <div class="vision-header">
-          <h2 class="vision-title">📷 Physical Board Recognition (Vision Mode)</h2>
-          <p class="vision-subtitle">Upload a photo of any real-world chessboard. Adjust the corners, review the recognized position, and import it into Coach or Play mode.</p>
-        </div>
-
-        <div class="vision-grid">
-          <!-- Panel 1: Image & Canvas with Draggable Corners -->
-          <div class="vision-card glass-inner">
-            <div class="vision-card-title">1. Upload & Calibrate Corners</div>
-            <div class="vision-dropzone" id="vision-dropzone">
-              <input type="file" id="vision-file-input" accept="image/*" class="hidden" />
-              <div class="dropzone-prompt" id="dropzone-prompt">
-                <span class="dropzone-icon">📁</span>
-                <span>Drag & drop a chessboard photo or <strong class="link-text">browse</strong></span>
-              </div>
-              <canvas id="vision-canvas" class="hidden"></canvas>
-            </div>
-            <div class="vision-controls">
-              <div class="vision-toggle-group">
-                <label>Bottom Side:</label>
-                <button class="toggle-btn active" id="btn-vision-white">White</button>
-                <button class="toggle-btn" id="btn-vision-black">Black</button>
-              </div>
-              <button class="btn-primary" id="btn-vision-process" disabled>Extract & Recognize FEN</button>
-            </div>
-          </div>
-
-          <!-- Panel 2: Result & Verification -->
-          <div class="vision-card glass-inner">
-            <div class="vision-card-title">2. Verify & Adjust Position</div>
-            <div class="vision-results-wrap">
-              <!-- Warped preview -->
-              <div class="warped-preview-box">
-                <span class="preview-label">Rectified Top-Down View</span>
-                <img id="vision-warped-img" class="warped-img" src="" alt="Rectified Board" />
-              </div>
-              <!-- Digital board preview -->
-              <div class="digital-preview-box">
-                <span class="preview-label">Recognized Digital Board</span>
-                <div class="preview-board" id="vision-board-preview"></div>
-              </div>
-            </div>
-            
-            <div class="vision-status-box" id="vision-status-box">
-              <span class="status-pill status-legal" id="vision-legality-pill">Awaiting Upload</span>
-              <span class="fen-text" id="vision-fen-display">—</span>
-            </div>
-
-            <div class="vision-actions">
-              <button class="btn-secondary" id="btn-vision-to-coach">🎓 Analyze in Coach Mode</button>
-              <button class="btn-primary" id="btn-vision-to-play">⚔ Play Against Stockfish</button>
-              <button class="btn-ghost" id="btn-vision-copy-fen">📋 Copy FEN</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <!-- ── ANALYTICS WORKSPACE ────────────────────────────── -->
       <section class="analytics-workspace glass hidden" id="analytics-workspace">
         <div class="analytics-header">
@@ -369,28 +309,6 @@
     </main>
   </div>
 
-  <!-- Piece Edit Palette Modal -->
-  <div class="modal-overlay hidden" id="piece-palette-overlay">
-    <div class="piece-palette glass">
-      <div class="palette-title">Select Piece for <span id="palette-square-name">e4</span></div>
-      <div class="palette-grid">
-        <button class="pal-btn" data-piece="K">♔</button>
-        <button class="pal-btn" data-piece="Q">♕</button>
-        <button class="pal-btn" data-piece="R">♖</button>
-        <button class="pal-btn" data-piece="B">♗</button>
-        <button class="pal-btn" data-piece="N">♘</button>
-        <button class="pal-btn" data-piece="P">♙</button>
-        <button class="pal-btn pal-black" data-piece="k">♚</button>
-        <button class="pal-btn pal-black" data-piece="q">♛</button>
-        <button class="pal-btn pal-black" data-piece="r">♜</button>
-        <button class="pal-btn pal-black" data-piece="b">♝</button>
-        <button class="pal-btn pal-black" data-piece="n">♞</button>
-        <button class="pal-btn pal-black" data-piece="p">♟</button>
-        <button class="pal-btn pal-clear" data-piece="empty">✕ Clear</button>
-      </div>
-      <button class="btn-ghost" id="btn-palette-close">Cancel</button>
-    </div>
-  </div>
 
   <!-- Promotion dialog -->
   <div class="modal-overlay hidden" id="promo-overlay">

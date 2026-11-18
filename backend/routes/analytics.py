@@ -204,34 +204,66 @@ async def get_player_analytics(
         # 5. Openings Repertoire from Knowledge Base
         rag = get_rag_knowledge_base()
         repertoire_map: Dict[str, Dict[str, Any]] = {}
-        for op in rag.openings[:4]:
+        for op in rag.openings[:6]:
             repertoire_map[op["name"]] = {
                 "eco": op.get("eco", "A00"),
                 "name": op["name"],
                 "games": 0,
                 "wins": 0,
                 "cp_sum": 0.0,
-                "moves": 0,
+                "cp_moves": 0,
             }
 
-        # Estimate openings from moves
-        for san in opening_moves_sample:
-            matched = rag.match_opening(san, ply=2)
-            if matched and matched["name"] in repertoire_map:
-                repertoire_map[matched["name"]]["games"] += 1
-                repertoire_map[matched["name"]]["wins"] += 1
+        # For each game, identify opening and calculate distinct game performance
+        for g in games:
+            g_id = g["id"]
+            async with db.execute(
+                """
+                SELECT move_san, ply_number, centipawn_loss
+                FROM moves
+                WHERE game_id = ?
+                ORDER BY ply_number ASC
+                """,
+                (g_id,),
+            ) as m_cur:
+                g_moves = await m_cur.fetchall()
+
+            if not g_moves:
+                continue
+
+            matched_name = None
+            for mv in g_moves[:2]:
+                if mv["move_san"]:
+                    matched = rag.match_opening(mv["move_san"], ply=mv["ply_number"])
+                    if matched and matched["name"] in repertoire_map:
+                        matched_name = matched["name"]
+                        break
+
+            if matched_name:
+                repertoire_map[matched_name]["games"] += 1
+                p_col = (g["player_color"] or "white").lower()
+                res = g["result"]
+                is_win = (p_col == "white" and res == "1-0") or (p_col == "black" and res == "0-1")
+                if is_win:
+                    repertoire_map[matched_name]["wins"] += 1
+
+                for mv in g_moves:
+                    if mv["centipawn_loss"] is not None:
+                        repertoire_map[matched_name]["cp_sum"] += float(mv["centipawn_loss"])
+                        repertoire_map[matched_name]["cp_moves"] += 1
 
         openings_list: List[OpeningStats] = []
         for name, data in repertoire_map.items():
-            g_count = max(1, data["games"])
-            w_pct = round((data["wins"] / g_count) * 100.0, 1)
+            g_count = data["games"]
+            w_pct = round((data["wins"] / g_count) * 100.0, 1) if g_count > 0 else 0.0
+            avg_cp = round(data["cp_sum"] / max(1, data["cp_moves"]), 1) if data["cp_moves"] > 0 else 40.0
             openings_list.append(
                 OpeningStats(
                     eco=data["eco"],
                     name=name,
-                    games=data["games"],
+                    games=g_count,
                     win_rate_pct=w_pct,
-                    avg_cp_loss=38.0,
+                    avg_cp_loss=avg_cp,
                 )
             )
 

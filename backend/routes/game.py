@@ -130,8 +130,9 @@ async def new_game(req: NewGameRequest):
                 profile = dict(profile_row) if profile_row else {}
 
             async with db.execute("""
-                SELECT                    g.engine_skill_level,
+                SELECT g.engine_skill_level,
                     g.result,
+                    COALESCE(g.player_color, 'white') as player_color,
                     AVG(m.centipawn_loss) as avg_cp_loss
                 FROM games g
                 LEFT JOIN moves m ON g.id = m.game_id
@@ -144,10 +145,11 @@ async def new_game(req: NewGameRequest):
             history = []
             for r in history_rows:
                 res_score = 0.5
+                hist_col = (r["player_color"] or "white").lower()
                 if r["result"] == "1-0":
-                    res_score = 1.0 if req.player_color == "white" else 0.0
+                    res_score = 1.0 if hist_col == "white" else 0.0
                 elif r["result"] == "0-1":
-                    res_score = 0.0 if req.player_color == "white" else 1.0
+                    res_score = 0.0 if hist_col == "white" else 1.0
 
                 history.append({
                     "engine_skill_level": r["engine_skill_level"],
@@ -443,7 +445,7 @@ async def get_game(game_id: str):
         game_id=game_id,
         fen=current_fen,
         skill_level=game["engine_skill_level"],
-        player_color="white",  # stored in session in Phase 1
+        player_color=game.get("player_color") or "white",
         game_over=game_over,
         result=game["result"],
         termination=None,
@@ -454,16 +456,21 @@ async def get_game(game_id: str):
 
 @router.post("/{game_id}/resign", response_model=ResignResponse, summary="Resign the game")
 async def resign(game_id: str, req: ResignRequest):
-    """Resign the game — records result as 0-1 (engine wins)."""
+    """Resign the game — records result accurately based on player color."""
     game = await _load_game(game_id)
     if game["ended_at"]:
         raise HTTPException(status_code=400, detail="Game already ended.")
 
+    p_col = (game.get("player_color") or "white").lower()
+    # If White resigns, Black/engine wins: "0-1"
+    # If Black resigns, White/engine wins: "1-0"
+    resign_result = "0-1" if p_col == "white" else "1-0"
+
     db = await get_db()
     try:
         await db.execute(
-            "UPDATE games SET result = '0-1', ended_at = datetime('now') WHERE id = ?",
-            (game_id,),
+            "UPDATE games SET result = ?, ended_at = datetime('now') WHERE id = ?",
+            (resign_result, game_id),
         )
         await db.commit()
     finally:
@@ -473,6 +480,6 @@ async def resign(game_id: str, req: ResignRequest):
 
     return ResignResponse(
         game_id=game_id,
-        result="0-1",
+        result=resign_result,
         message="You resigned. Better luck next time!",
     )
