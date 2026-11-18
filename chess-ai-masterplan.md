@@ -1,55 +1,44 @@
-# Adaptive Chess AI — Full Masterplan (Zero-Budget Build)
-### Play Mode + Coach Mode + Vision, powered entirely by free-tier infrastructure and OpenRouter's free LLM pool
+# Adaptive Chess AI — Masterplan (Course-Aligned Zero-Budget Build)
+### Play Mode + Coach Mode + Analytics, powered by Stockfish, Online ML, and Local RAG Knowledge Retrieval
 
 ---
 
-## 0. What Changed From the Original Ideation
+## 0. Academic Course Alignment & Scope Focus
 
-Every component that originally implied a paid service has been swapped for a free-tier or self-hosted equivalent. The single biggest cost risk in the original plan was the LLM layer (OpenAI/paid inference) — this is now solved with **OpenRouter's free model pool + a multi-key rotation system**, detailed fully in Section 5. Nothing else in the architecture requires a credit card.
-
-| Original (paid-implying) | Replacement (free) |
-|---|---|
-| OpenAI GPT-4 | OpenRouter free models (rotated across multiple keys) |
-| Pinecone (paid tiers) | Chroma / FAISS — local, free, no network dependency |
-| AWS/GCP deployment | Render free web service / Fly.io free allowance / Railway free trial / Oracle Cloud Free Tier |
-| Managed PostgreSQL | Supabase free tier / Neon free tier / local SQLite for MVP |
-| Redis (paid tiers) | Upstash Redis free tier (10k commands/day) or in-memory dict for MVP |
-| Prometheus + Grafana (hosted) | Self-hosted via Docker Compose (free) or Grafana Cloud free tier |
-| GPU training instances | Google Colab free tier / Kaggle Notebooks free GPU (30 hrs/week) |
-| MLflow hosted | Self-hosted MLflow (free, local SQLite backend) |
-| Domain + SSL | Vercel/Render subdomains are free; custom domain optional later |
-
-Nothing below assumes you will ever enter payment details anywhere. Every "free tier" mentioned has been chosen because it has a genuinely usable no-card-required (or card-required-but-$0-charged) free plan as of the plan's writing — you should still verify current limits before depending on them, since free tiers shift over time.
+To align directly with the academic Artificial Intelligence (AI) evaluation rubric and ensure 100% reliability during project defense/viva:
+1. **Focus on Core AI Pillars**: State-space search heuristics, $\alpha$-$\beta$ pruning, online student modeling (Ridge regression), knowledge representation (local RAG), and neuro-symbolic move verification.
+2. **Pruned Out-of-Syllabus Bloat**: Physical board computer vision (CV) and cloud infrastructure (Docker Compose, Prometheus, Grafana, Vercel, Render) were safely pruned so the entire platform runs 100% locally with zero cloud, container, or network dependencies.
+3. **Empirical Benchmarks**: Automated evaluation suite (`scripts/evaluate_ai.py`) generating empirical state-space search scaling, persona convergence curves, and caching speedup figures.
 
 ---
 
-## 1. System Architecture (Revised for Free-Tier Deployment)
+## 1. System Architecture (Course-Aligned 3-Tab Design)
 
 ```
 ┌───────────────────────────────────────────────────────────────────┐
-│                     FRONTEND (Vercel/Netlify free)                 │
+│                     FRONTEND (Local Web UI)                       │
 │   ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐         │
-│   │  PLAY MODE   │  │ COACH MODE   │  │  VISION MODE      │        │
-│   └──────┬───────┘  └──────┬───────┘  └────────┬──────────┘        │
+│   │  PLAY MODE   │  │ COACH MODE   │  │    ANALYTICS     │         │
+│   └──────┬───────┘  └──────┬───────┘  └────────┬─────────┘         │
 └──────────┼─────────────────┼───────────────────┼───────────────────┘
            │                 │                   │
            ▼                 ▼                   ▼
 ┌───────────────────────────────────────────────────────────────────┐
-│         BACKEND — FastAPI + WebSocket (Render/Fly.io free tier)    │
+│         BACKEND — FastAPI REST API (Python 3.12 Local)            │
 └──────┬──────────────┬──────────────┬──────────────┬────────────────┘
        │              │              │              │
        ▼              ▼              ▼              ▼
 ┌───────────┐  ┌───────────┐  ┌────────────────┐  ┌───────────┐
-│  PLAYER   │  │  ENGINE   │  │  COACH MODULE   │  │  VISION   │
-│  MODEL    │  │  MODULE   │  │  (OpenRouter    │  │  MODULE   │
-│(rule-based│  │(Stockfish │  │   free LLMs +   │  │ (ViT/CNN, │
-│ → RL)     │  │  local)   │  │   key-rotator   │  │  HF free) │
+│  PLAYER   │  │  ENGINE   │  │  COACH MODULE   │  │ ANALYTICS │
+│  MODEL    │  │  MODULE   │  │ (Stockfish +   │  │ DASHBOARD │
+│ (Online   │  │(Stockfish/│  │  Local RAG +   │  │ (Chart.js │
+│  Ridge)   │  │Heuristic) │  │  SQLite Cache) │  │  Metrics) │
 └───────────┘  └───────────┘  └────────────────┘  └───────────┘
        │              │              │              │
        ▼              ▼              ▼              ▼
 ┌───────────────────────────────────────────────────────────────────┐
-│   DATA LAYER — SQLite/Supabase-free (games+profiles) │             │
-│   Chroma/FAISS local (vector/RAG) │ Upstash-free or in-mem (cache) │
+│   DATA LAYER — SQLite Local DB (`chess_arena.db`)                 │
+│   Curated Knowledge Base (RAG JSON) │ SQLite LLM Cache            │
 └───────────────────────────────────────────────────────────────────┘
 ```
 

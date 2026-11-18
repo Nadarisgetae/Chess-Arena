@@ -1,7 +1,7 @@
 # Chess Arena: Empirical AI Evaluation Report
 
 > **Course Alignment**: Artificial Intelligence (AI) Final Project Evaluation  
-> **Evaluation Date**: 2026-11-19 00:48:49  
+> **Evaluation Date**: 2026-11-19 00:54:04  
 > **Platform**: Windows / Python 3.12 / SQLite 3 / FastAPI  
 
 ---
@@ -23,9 +23,9 @@ Evaluated across **20 standard test positions** spanning Openings, Middlegames, 
 
 | Search Depth | Mean Latency (ms) | Median (ms) | Std Dev (ms) | Mean Nodes Explored | Mean $\beta$-Cutoffs |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Depth 1** (1-ply heuristic) | **4.084 ms** | 4.129 ms | 2.759 ms | 30.5 | 0.0 |
-| **Depth 2** (2-ply $\alpha$-$\beta$) | **18.537 ms** | 18.621 ms | 9.139 ms | 140.2 | 27.1 |
-| **Depth 3** (3-ply $\alpha$-$\beta$) | **283.945 ms** | 239.645 ms | 208.073 ms | 2210.1 | 166.9 |
+| **Depth 1** (1-ply heuristic) | **4.821 ms** | 4.249 ms | 6.599 ms | 30.5 | 0.0 |
+| **Depth 2** (2-ply $\alpha$-$\beta$) | **18.292 ms** | 17.752 ms | 11.491 ms | 140.2 | 27.1 |
+| **Depth 3** (3-ply $\alpha$-$\beta$) | **281.875 ms** | 244.514 ms | 221.793 ms | 2210.1 | 166.9 |
 
 ### Complexity & Branching Factor Analysis
 - **Empirical Average Branching Factor**: $b = 29.5$ legal moves per state.
@@ -62,12 +62,12 @@ Evaluation of the hybrid Coach architecture: Deterministic symbolic verification
 
 | Architecture Tier | Mechanism | Mean Latency | Median | P95 Latency | Speedup vs LLM |
 | :--- | :--- | :---: | :---: | :---: | :---: |
-| **Tier 1** | Deterministic Classifier + Local RAG | **0.661 ms** | 0.629 ms | 0.877 ms | **1798x** |
-| **Tier 2** | SQLite Indexed Explanation Cache | **1.283 ms** | 1.254 ms | 1.563 ms | **926x** |
+| **Tier 1** | Deterministic Classifier + Local RAG | **0.387 ms** | 0.383 ms | 0.487 ms | **3070x** |
+| **Tier 2** | SQLite Indexed Explanation Cache | **0.416 ms** | 0.393 ms | 0.525 ms | **2857x** |
 | **Tier 3** | External LLM Generation API | **1188.2 ms** | 1195.7 ms | 1363.6 ms | **1.0x** (Baseline) |
 
 ### Key Architectural Findings
-- **Latency Reduction**: SQLite caching reduces response time from **1188.2 ms** down to **1.283 ms** (**99.89% reduction**).
+- **Latency Reduction**: SQLite caching reduces response time from **1188.2 ms** down to **0.416 ms** (**99.96% reduction**).
 - **Hallucination Prevention**: Centipawn loss, win probability delta, and tactical labels are 100% deterministically verified by the symbolic chess engine before prompt synthesis, guaranteeing factual soundness.
 - **Zero-Budget Resilience**: When API keys are exhausted or offline, the system seamlessly falls back to Tier 1 local RAG knowledge retrieval without service disruption.
 
