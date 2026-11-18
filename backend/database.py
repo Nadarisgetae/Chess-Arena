@@ -84,6 +84,7 @@ ADDITIONAL_PLAYER_PROFILE_COLUMNS: dict[str, str] = {
 
 ADDITIONAL_GAMES_COLUMNS: dict[str, str] = {
     "player_color": "TEXT DEFAULT 'white'",
+    "starting_fen": "TEXT DEFAULT 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'",
 }
 
 # ── Coach columns added in Phase 2 ─────────────────────────────────────────────

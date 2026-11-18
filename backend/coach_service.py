@@ -19,7 +19,11 @@ from typing import Optional
 import chess
 import chess.engine
 
-from backend.engine_service import _find_stockfish  # reuse existing discovery
+from backend.engine_service import (
+    _find_stockfish,
+    fallback_heuristic_eval,
+    fallback_get_best_move,
+)
 from backend.database import get_db
 from backend.key_rotator import KeyRotator, load_keys_from_env_or_file
 from backend.rag_service import get_rag_knowledge_base
@@ -322,6 +326,48 @@ async def analyse_position(
     board = chess.Board(fen)
     mover_color = board.turn
 
+    if path is None:
+        legal_moves = list(board.legal_moves)
+        scored_moves = []
+        for m in legal_moves:
+            board.push(m)
+            sc = fallback_heuristic_eval(board)
+            if mover_color == chess.BLACK:
+                sc = -sc
+            scored_moves.append((m, sc))
+            board.pop()
+        scored_moves.sort(key=lambda x: x[1], reverse=True)
+        top_move = scored_moves[0][0] if scored_moves else None
+        top_score = scored_moves[0][1] if scored_moves else 0
+        win_pct_top = cp_to_win_pct(top_score)
+
+        alternatives = []
+        for alt_m, alt_sc in scored_moves[1:multipv]:
+            alt_win = cp_to_win_pct(alt_sc)
+            alternatives.append({
+                "move_uci": alt_m.uci(),
+                "move_san": board.san(alt_m),
+                "win_pct": alt_win,
+                "centipawns": alt_sc,
+                "mate_in": None,
+                "win_pct_loss_vs_best": round(max(0.0, win_pct_top - alt_win), 4),
+            })
+
+        return {
+            "engine_version": "Heuristic Fallback",
+            "depth": 1,
+            "time_limit": time_limit,
+            "multipv": multipv,
+            "best_move_uci": top_move.uci() if top_move else None,
+            "best_move_san": board.san(top_move) if top_move else None,
+            "best_line": [top_move.uci()] if top_move else [],
+            "best_line_san": [board.san(top_move)] if top_move else [],
+            "alternatives": alternatives,
+            "win_pct": win_pct_top,
+            "centipawns": top_score,
+            "mate_in": None,
+        }
+
     transport, engine = await chess.engine.popen_uci(str(path))
     try:
         await engine.configure({"Skill Level": 20})
@@ -447,6 +493,49 @@ async def analyse_played_move(
     facts = _extract_board_facts(board, move)
 
     path = get_stockfish_path()
+
+    if path is None:
+        pre_cp_white = fallback_heuristic_eval(board)
+        pre_cp_mover = pre_cp_white if mover_color == chess.WHITE else -pre_cp_white
+        win_pct_before = cp_to_win_pct(pre_cp_mover)
+
+        best_m, _ = fallback_get_best_move(board)
+        best_move_uci_str = best_m.uci() if best_m else move_uci
+        best_move_san = board.san(best_m) if best_m else move_san
+
+        board_after = board.copy()
+        board_after.push(move)
+        post_cp_white = fallback_heuristic_eval(board_after)
+        post_cp_mover = post_cp_white if mover_color == chess.WHITE else -post_cp_white
+        win_pct_after = cp_to_win_pct(post_cp_mover)
+
+        is_best_move = (move_uci == best_move_uci_str)
+        win_pct_loss = 0.0 if is_best_move else round(max(0.0, win_pct_before - win_pct_after), 4)
+        centipawn_loss = 0.0 if is_best_move else round(max(0.0, pre_cp_mover - post_cp_mover), 2)
+
+        quality_label = "best" if is_best_move or facts["is_checkmate"] else classify_move(win_pct_loss, is_best_move)
+
+        result_payload = {
+            "fen": fen,
+            "move_uci": move_uci,
+            "move_san": move_san,
+            "quality_label": quality_label,
+            "win_pct_before": win_pct_before,
+            "win_pct_after": win_pct_after,
+            "win_pct_loss": win_pct_loss,
+            "centipawn_loss": centipawn_loss,
+            "best_move_uci": best_move_uci_str,
+            "best_move_san": best_move_san,
+            "best_line": [best_move_uci_str],
+            "best_line_san": [best_move_san],
+            "alternatives": [],
+            "depth": 1,
+            "time_limit": time_limit,
+            "engine": "Heuristic Fallback",
+            **facts,
+        }
+        result_payload["coach_summary"] = build_coach_summary(result_payload)
+        return result_payload
 
     transport, engine = await chess.engine.popen_uci(str(path))
     try:

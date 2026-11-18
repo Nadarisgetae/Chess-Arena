@@ -45,6 +45,10 @@ class NewGameRequest(BaseModel):
         pattern="^(white|black)$",
         description="Which color the human plays"
     )
+    fen: Optional[str] = Field(
+        default=None,
+        description="Optional custom starting FEN position"
+    )
 
 
 class NewGameResponse(BaseModel):

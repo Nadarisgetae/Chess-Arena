@@ -4,6 +4,7 @@ Persists game state (FEN, moves, PGN) in SQLite.
 """
 
 import json
+import logging
 import uuid
 import chess
 import chess.pgn
@@ -19,6 +20,7 @@ from backend.models import (
     ResignRequest, ResignResponse,
 )
 
+logger = logging.getLogger("chess_arena.game")
 router = APIRouter(prefix="/game", tags=["Game"])
 
 
@@ -58,7 +60,7 @@ def _current_fen(game: dict, moves: list[dict]) -> str:
     """Return the latest FEN: last move's fen_after, or the starting FEN."""
     if moves:
         return moves[-1]["fen_after"]
-    return chess.STARTING_FEN
+    return game.get("starting_fen") or chess.STARTING_FEN
 
 
 def _rebuild_pgn(moves: list[dict]) -> str:
@@ -110,7 +112,12 @@ async def new_game(req: NewGameRequest):
     Stockfish plays the first move immediately.
     """
     game_id = str(uuid.uuid4())
-    starting_fen = chess.STARTING_FEN
+    starting_fen = req.fen if req.fen else chess.STARTING_FEN
+
+    try:
+        board = chess.Board(starting_fen)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid FEN: {starting_fen!r}")
 
     db = await get_db()
 
@@ -158,9 +165,9 @@ async def new_game(req: NewGameRequest):
 
     try:
         await db.execute(
-            """INSERT INTO games (id, player_id, mode, engine_skill_level, pgn, player_color)
-               VALUES (?, ?, 'play', ?, '', ?)""",
-            (game_id, req.player_id, actual_skill, req.player_color),
+            """INSERT INTO games (id, player_id, mode, engine_skill_level, pgn, player_color, starting_fen)
+               VALUES (?, ?, 'play', ?, '', ?, ?)""",
+            (game_id, req.player_id, actual_skill, req.player_color, starting_fen),
         )
         await db.commit()
     finally:
@@ -173,38 +180,43 @@ async def new_game(req: NewGameRequest):
         skill_level=actual_skill,
     )
 
-    # If player chose black, engine makes the first move
-    if req.player_color == "black":
-        engine_result = await get_best_move(
-            starting_fen,
-            skill_level=actual_skill,
-            time_limit=0.1,
-        )
-        move_data = apply_move(starting_fen, engine_result["best_move_uci"])
-
-        # Persist engine's first move
-        move_id = str(uuid.uuid4())
-        db = await get_db()
+    # Check if engine makes the first move
+    is_engine_first = (board.turn == chess.WHITE and req.player_color == "black") or (board.turn == chess.BLACK and req.player_color == "white")
+    if is_engine_first:
         try:
-            await db.execute(
-                """INSERT INTO moves
-                   (id, game_id, ply_number, move_san, move_uci, fen_before, fen_after)
-                   VALUES (?, ?, 1, ?, ?, ?, ?)""",
-                (
-                    move_id, game_id, 1,
-                    move_data["san"],
-                    engine_result["best_move_uci"],
-                    starting_fen,
-                    move_data["new_fen"],
-                ),
+            engine_result = await get_best_move(
+                starting_fen,
+                skill_level=actual_skill,
+                time_limit=0.1,
             )
-            await db.commit()
-        finally:
-            await db.close()
+            if engine_result.get("best_move_uci"):
+                move_data = apply_move(starting_fen, engine_result["best_move_uci"])
 
-        response.engine_move = engine_result["best_move_uci"]
-        response.engine_move_san = move_data["san"]
-        response.fen_after_engine = move_data["new_fen"]
+                # Persist engine's first move
+                move_id = str(uuid.uuid4())
+                db = await get_db()
+                try:
+                    await db.execute(
+                        """INSERT INTO moves
+                           (id, game_id, ply_number, move_san, move_uci, fen_before, fen_after)
+                           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                        (
+                            move_id, game_id, 1,
+                            move_data["san"],
+                            engine_result["best_move_uci"],
+                            starting_fen,
+                            move_data["new_fen"],
+                        ),
+                    )
+                    await db.commit()
+                finally:
+                    await db.close()
+
+                response.engine_move = engine_result["best_move_uci"]
+                response.engine_move_san = move_data["san"]
+                response.fen_after_engine = move_data["new_fen"]
+        except Exception as e:
+            logger.warning(f"Engine first move error: {e}")
 
     return response
 
@@ -329,58 +341,83 @@ async def make_move(game_id: str, req: MakeMoveRequest):
         )
 
     # --- Engine response ---
-    engine_result = await get_best_move(
-        player_data["new_fen"],
-        skill_level=game["engine_skill_level"],
-        time_limit=req.time_limit,
-    )
+    engine_move_uci = None
+    engine_move_san = None
+    fen_after_engine = player_data["new_fen"]
+    eval_cp = None
+    eval_mate_in = None
+    eval_win_pct = None
+    engine_game_over = False
+    engine_result_str = None
+    engine_termination = None
+    engine_is_check = False
 
-    engine_move_data = apply_move(
-        player_data["new_fen"], engine_result["best_move_uci"]
-    )
-
-    engine_ply = ply + 1
-    engine_move_id = str(uuid.uuid4())
-    db = await get_db()
     try:
-        await db.execute(
-            """INSERT INTO moves
-               (id, game_id, ply_number, move_san, move_uci, fen_before, fen_after)
-               VALUES (?, ?, ?, ?, ?, ?, ?)""",
-            (
-                engine_move_id, game_id, engine_ply,
-                engine_move_data["san"],
-                engine_result["best_move_uci"],
-                player_data["new_fen"],
-                engine_move_data["new_fen"],
-            ),
+        engine_result = await get_best_move(
+            player_data["new_fen"],
+            skill_level=game["engine_skill_level"],
+            time_limit=req.time_limit,
         )
-        if engine_move_data["game_over"]:
-            await db.execute(
-                "UPDATE games SET result = ?, ended_at = datetime('now') WHERE id = ?",
-                (engine_move_data["result"], game_id),
-            )
-        await db.commit()
-    finally:
-        await db.close()
+        engine_move_uci = engine_result.get("best_move_uci")
+        eval_cp = engine_result.get("centipawns")
+        eval_mate_in = engine_result.get("mate_in")
+        eval_win_pct = engine_result.get("win_pct")
 
-    if engine_move_data["game_over"]:
-        await _update_player_stats(game["player_id"])
+        if engine_move_uci:
+            engine_move_data = apply_move(
+                player_data["new_fen"], engine_move_uci
+            )
+            engine_move_san = engine_move_data["san"]
+            fen_after_engine = engine_move_data["new_fen"]
+            engine_game_over = engine_move_data["game_over"]
+            engine_result_str = engine_move_data["result"] if engine_game_over else None
+            engine_termination = engine_move_data["termination"]
+            engine_is_check = engine_move_data["is_check"]
+
+            engine_ply = ply + 1
+            engine_move_id = str(uuid.uuid4())
+            db = await get_db()
+            try:
+                await db.execute(
+                    """INSERT INTO moves
+                       (id, game_id, ply_number, move_san, move_uci, fen_before, fen_after)
+                       VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                    (
+                        engine_move_id, game_id, engine_ply,
+                        engine_move_san,
+                        engine_move_uci,
+                        player_data["new_fen"],
+                        fen_after_engine,
+                    ),
+                )
+                if engine_game_over:
+                    await db.execute(
+                        "UPDATE games SET result = ?, ended_at = datetime('now') WHERE id = ?",
+                        (engine_result_str, game_id),
+                    )
+                await db.commit()
+            finally:
+                await db.close()
+
+            if engine_game_over:
+                await _update_player_stats(game["player_id"])
+    except Exception as e:
+        logger.warning(f"Engine move generation failed: {e}")
 
     return MoveResult(
         legal=True,
         fen_after_player=player_data["new_fen"],
         player_move_san=player_data["san"],
-        engine_move_uci=engine_result["best_move_uci"],
-        engine_move_san=engine_move_data["san"],
-        fen_after_engine=engine_move_data["new_fen"],
-        eval_centipawns=engine_result.get("centipawns"),
-        eval_mate_in=engine_result.get("mate_in"),
-        win_pct=engine_result.get("win_pct"),
-        game_over=engine_move_data["game_over"],
-        game_result=engine_move_data["result"] if engine_move_data["game_over"] else None,
-        termination=engine_move_data["termination"],
-        is_check=engine_move_data["is_check"],
+        engine_move_uci=engine_move_uci,
+        engine_move_san=engine_move_san,
+        fen_after_engine=fen_after_engine,
+        eval_centipawns=eval_cp,
+        eval_mate_in=eval_mate_in,
+        win_pct=eval_win_pct,
+        game_over=engine_game_over,
+        game_result=engine_result_str,
+        termination=engine_termination,
+        is_check=engine_is_check,
         coach_quality_label=coach_data.get("quality_label"),
         coach_win_pct_before=coach_data.get("win_pct_before"),
         coach_win_pct_after=coach_data.get("win_pct_after"),

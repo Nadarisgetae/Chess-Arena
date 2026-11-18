@@ -12,21 +12,32 @@ Or set STOCKFISH_PATH environment variable to the full path.
 """
 
 import asyncio
+import logging
 import math
 import os
+import shutil
 from pathlib import Path
 from typing import Optional
 import chess
 import chess.engine
 import chess.pgn
 
+logger = logging.getLogger("chess_arena.engine")
+
 # ── Configuration ──────────────────────────────────────────────────────────────
 
-def _find_stockfish() -> Path:
-    """Locate the Stockfish binary. Check env var first, then bundled path."""
+def _find_stockfish() -> Optional[Path]:
+    """Locate the Stockfish binary. Check env var first, system PATH, then bundled paths."""
     env_path = os.environ.get("STOCKFISH_PATH")
     if env_path:
         p = Path(env_path)
+        if p.exists():
+            return p
+
+    # Check system PATH
+    which_stockfish = shutil.which("stockfish") or shutil.which("stockfish.exe")
+    if which_stockfish:
+        p = Path(which_stockfish)
         if p.exists():
             return p
 
@@ -35,20 +46,86 @@ def _find_stockfish() -> Path:
         base / "stockfish.exe",
         base / "stockfish",
         base / "stockfish-windows-x86-64.exe",
+        base / "stockfish-windows-x86-64-avx2.exe",
+        base / "stockfish-windows-x86-64-modern.exe",
         base / "stockfish-ubuntu-x86-64",
     ]
     for c in candidates:
         if c.exists():
             return c
 
-    raise FileNotFoundError(
-        "Stockfish binary not found. Download from https://stockfishchess.org/download/ "
-        "and place it in backend/stockfish/ or set STOCKFISH_PATH env var."
-    )
+    return None
 
 
-STOCKFISH_PATH = _find_stockfish() if Path(Path(__file__).parent / "stockfish").exists() else None
+STOCKFISH_PATH = _find_stockfish()
 _engine_lock = asyncio.Lock()
+
+
+# ── Built-in Heuristic Fallback Engine ─────────────────────────────────────────
+
+PIECE_VALUES = {
+    chess.PAWN: 100,
+    chess.KNIGHT: 320,
+    chess.BISHOP: 330,
+    chess.ROOK: 500,
+    chess.QUEEN: 900,
+    chess.KING: 20000,
+}
+
+CENTER_SQUARES = {chess.D4, chess.D5, chess.E4, chess.E5}
+SWEET_CENTER = {
+    chess.C3, chess.C4, chess.C5, chess.C6,
+    chess.D3, chess.D6, chess.E3, chess.E6,
+    chess.F3, chess.F4, chess.F5, chess.F6,
+}
+
+
+def fallback_heuristic_eval(board: chess.Board) -> int:
+    """Evaluate position in centipawns from White's perspective."""
+    if board.is_checkmate():
+        return -10000 if board.turn == chess.WHITE else 10000
+    if board.is_stalemate() or board.is_insufficient_material():
+        return 0
+
+    score = 0
+    for sq, piece in board.piece_map().items():
+        val = PIECE_VALUES.get(piece.piece_type, 0)
+        if sq in CENTER_SQUARES:
+            val += 25
+        elif sq in SWEET_CENTER:
+            val += 10
+        if piece.color == chess.WHITE:
+            score += val
+        else:
+            score -= val
+    return score
+
+
+def fallback_get_best_move(board: chess.Board) -> tuple[Optional[chess.Move], int]:
+    """Find best move using 1-ply search with captures and center control."""
+    legal_moves = list(board.legal_moves)
+    if not legal_moves:
+        return None, 0
+
+    best_move = legal_moves[0]
+    is_white = (board.turn == chess.WHITE)
+    best_score = -999999 if is_white else 999999
+
+    for move in legal_moves:
+        board.push(move)
+        score = fallback_heuristic_eval(board)
+        board.pop()
+
+        if is_white:
+            if score > best_score:
+                best_score = score
+                best_move = move
+        else:
+            if score < best_score:
+                best_score = score
+                best_move = move
+
+    return best_move, best_score
 
 
 # ── Win Probability Conversion ─────────────────────────────────────────────────
@@ -83,6 +160,12 @@ async def _run_analysis(
     service stays stateless and safe for concurrent requests.
     """
     path = _find_stockfish()
+    if path is None:
+        raise FileNotFoundError(
+            "Stockfish binary not found. Download from https://stockfishchess.org/download/ "
+            "and place it in backend/stockfish/ or set STOCKFISH_PATH env var."
+        )
+
     board = chess.Board(fen)
 
     transport, engine = await chess.engine.popen_uci(str(path))
@@ -103,8 +186,22 @@ async def get_eval(fen: str, depth: int = 15) -> dict:
     """
     Return centipawn evaluation and win percentage for a given FEN.
     Mate scores are surfaced as mate_in (positive = mate for side to move).
+    Falls back gracefully to heuristic evaluation if Stockfish binary is missing.
     """
     board = chess.Board(fen)
+    path = _find_stockfish()
+
+    if path is None:
+        cp = fallback_heuristic_eval(board)
+        win_pct = cp_to_win_pct(cp, side=chess.WHITE)
+        return {
+            "fen": fen,
+            "centipawns": cp,
+            "mate_in": None,
+            "win_pct": win_pct,
+            "depth": 1,
+        }
+
     infos = await _run_analysis(fen, depth=depth, time_limit=0.2, skill_level=20)
     info = infos[0]
 
@@ -139,9 +236,26 @@ async def get_best_move(
 ) -> dict:
     """
     Return the best move for the current position, optionally with a skill cap.
+    Falls back gracefully to heuristic move search if Stockfish binary is missing.
     """
     board = chess.Board(fen)
     path = _find_stockfish()
+
+    if path is None:
+        move, cp = fallback_get_best_move(board)
+        move_san = board.san(move) if move else None
+        move_uci = move.uci() if move else None
+        win_pct = cp_to_win_pct(cp, side=chess.WHITE)
+        return {
+            "fen": fen,
+            "best_move_uci": move_uci,
+            "best_move_san": move_san,
+            "ponder": None,
+            "centipawns": cp,
+            "mate_in": None,
+            "win_pct": win_pct,
+            "depth": 1,
+        }
 
     transport, engine = await chess.engine.popen_uci(str(path))
     try:

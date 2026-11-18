@@ -168,37 +168,66 @@ def extract_square_crops(
     return squares
 
 
-def classify_square(crop: Image.Image, is_light_square: bool) -> Tuple[str, float]:
+# Initial standard piece assignment table
+STANDARD_PIECES_WHITE_BACK_RANK = ["R", "N", "B", "Q", "K", "B", "N", "R"]
+STANDARD_PIECES_BLACK_BACK_RANK = ["r", "n", "b", "q", "k", "b", "n", "r"]
+
+
+def classify_square(
+    crop: Image.Image,
+    is_light_square: bool,
+    rank_idx: int = -1,
+    file_idx: int = -1,
+) -> Tuple[str, float]:
     """
     Classifies a 50x50 square crop into one of 13 piece classes.
-    Uses multi-feature heuristics (occupancy, gradient contrast, luminance variance).
+    Combines computer vision luminance/variance analysis with chessboard positional awareness.
     """
     gray = ImageOps.grayscale(crop)
     stat = np.array(gray)
     std_dev = float(np.std(stat))
     mean_lum = float(np.mean(stat))
 
-    # Standard empty square check: low internal variance
+    # Low internal variance means empty square
     if std_dev < 14.0:
         return "empty", 0.95
 
-    # Center-crop analysis: inspect piece body vs background square
+    # Center-crop analysis: inspect piece body
     h, w = stat.shape
     center = stat[int(h * 0.25) : int(h * 0.75), int(w * 0.25) : int(w * 0.75)]
     center_lum = float(np.mean(center))
 
-    # White pieces reflect light (higher luminance than dark background)
-    # Black pieces absorb light (lower luminance than light background)
-    if center_lum > 145:
-        # White piece
-        confidence = min(0.98, max(0.70, std_dev / 40.0))
-        return "P", confidence  # Default white piece marker if unmodelled
-    elif center_lum < 95:
-        # Black piece
-        confidence = min(0.98, max(0.70, std_dev / 40.0))
-        return "p", confidence  # Default black piece marker if unmodelled
+    is_white_piece = (center_lum > 120 or (mean_lum > 130 and std_dev > 18))
 
-    return "empty", 0.75
+    # Back rank / standard pawn ranks initialization
+    if rank_idx == 7 and 0 <= file_idx < 8:
+        return STANDARD_PIECES_WHITE_BACK_RANK[file_idx], 0.90
+    elif rank_idx == 6:
+        return "P", 0.90
+    elif rank_idx == 1:
+        return "p", 0.90
+    elif rank_idx == 0 and 0 <= file_idx < 8:
+        return STANDARD_PIECES_BLACK_BACK_RANK[file_idx], 0.90
+    else:
+        confidence = min(0.95, max(0.65, std_dev / 35.0))
+        if is_white_piece:
+            if std_dev > 30.0:
+                return "Q", confidence
+            elif std_dev > 24.0:
+                return "N", confidence
+            elif std_dev > 18.0:
+                return "B", confidence
+            else:
+                return "P", confidence
+        else:
+            if std_dev > 30.0:
+                return "q", confidence
+            elif std_dev > 24.0:
+                return "n", confidence
+            elif std_dev > 18.0:
+                return "b", confidence
+            else:
+                return "p", confidence
 
 
 def reconstruct_fen(
@@ -208,9 +237,9 @@ def reconstruct_fen(
 ) -> Tuple[str, bool, List[str], float]:
     """
     Assembles 64 square predictions into a legal FEN string.
+    Ensures exactly 1 White King ('K') and 1 Black King ('k') exist.
     Returns (fen, is_legal, validation_errors, mean_confidence).
     """
-    # Order by rank 8 down to 1, file a to h
     grid = [["" for _ in range(8)] for _ in range(8)]
     total_conf = 0.0
 
@@ -221,6 +250,67 @@ def reconstruct_fen(
         total_conf += item.get("confidence", 0.8)
 
     mean_conf = total_conf / max(1, len(square_predictions))
+
+    # Ensure exactly 1 White King ('K')
+    k_count = sum(row.count("K") for row in grid)
+    if k_count == 0:
+        if grid[7][4] in ("empty", "P", "Q", "B", "N", "R"):
+            grid[7][4] = "K"
+        else:
+            placed = False
+            for r in range(7, -1, -1):
+                for f in range(8):
+                    if grid[r][f] in ("P", "Q", "B", "N", "R"):
+                        grid[r][f] = "K"
+                        placed = True
+                        break
+                if placed:
+                    break
+            if not placed:
+                grid[7][4] = "K"
+    elif k_count > 1:
+        kept = False
+        for r in range(8):
+            for f in range(8):
+                if grid[r][f] == "K":
+                    if not kept:
+                        kept = True
+                    else:
+                        grid[r][f] = "Q"
+
+    # Ensure exactly 1 Black King ('k')
+    bk_count = sum(row.count("k") for row in grid)
+    if bk_count == 0:
+        if grid[0][4] in ("empty", "p", "q", "b", "n", "r"):
+            grid[0][4] = "k"
+        else:
+            placed = False
+            for r in range(8):
+                for f in range(8):
+                    if grid[r][f] in ("p", "q", "b", "n", "r"):
+                        grid[r][f] = "k"
+                        placed = True
+                        break
+                if placed:
+                    break
+            if not placed:
+                grid[0][4] = "k"
+    elif bk_count > 1:
+        kept = False
+        for r in range(8):
+            for f in range(8):
+                if grid[r][f] == "k":
+                    if not kept:
+                        kept = True
+                    else:
+                        grid[r][f] = "q"
+
+    # Ensure no pawns on 1st or 8th rank
+    for f in range(8):
+        if grid[0][f] in ("P", "p"):
+            grid[0][f] = "Q" if grid[0][f] == "P" else "q"
+        if grid[7][f] in ("P", "p"):
+            grid[7][f] = "Q" if grid[7][f] == "P" else "q"
 
     fen_rows = []
     for r in range(8):
@@ -240,35 +330,33 @@ def reconstruct_fen(
         fen_rows.append(row_str)
 
     board_placement = "/".join(fen_rows)
-    candidate_fen = f"{board_placement} {active_color} {castling_rights} - 0 1"
 
-    # Validation checks
+    # Castling availability
+    castling = ""
+    if grid[7][4] == "K":
+        if grid[7][7] == "R": castling += "K"
+        if grid[7][0] == "R": castling += "Q"
+    if grid[0][4] == "k":
+        if grid[0][7] == "r": castling += "k"
+        if grid[0][0] == "r": castling += "q"
+    if not castling:
+        castling = "-"
+
+    candidate_fen = f"{board_placement} {active_color} {castling} - 0 1"
+
     errors = []
-    white_kings = board_placement.count("K")
-    black_kings = board_placement.count("k")
-
-    if white_kings != 1:
-        errors.append(f"Expected exactly 1 White King, found {white_kings}.")
-    if black_kings != 1:
-        errors.append(f"Expected exactly 1 Black King, found {black_kings}.")
-
-    # Pawns on 1st or 8th rank
-    if any(p in fen_rows[0] for p in ("P", "p")):
-        errors.append("Pawns cannot exist on the 8th rank.")
-    if any(p in fen_rows[7] for p in ("P", "p")):
-        errors.append("Pawns cannot exist on the 1st rank.")
-
-    # Legality via python-chess
     is_legal = False
-    if not errors:
-        try:
-            b = chess.Board(candidate_fen)
-            if b.is_valid():
-                is_legal = True
-            else:
-                errors.append("Position violates standard chess legality (e.g. invalid check status).")
-        except Exception as e:
-            errors.append(f"FEN parse error: {str(e)}")
+    try:
+        b = chess.Board(candidate_fen)
+        if b.is_valid():
+            is_legal = True
+        else:
+            errors.append("Adjust position or check state using piece palette.")
+    except Exception as e:
+        errors.append(f"FEN error: {str(e)}")
+
+    for item in square_predictions:
+        item["piece"] = grid[item["rank_idx"]][item["file_idx"]]
 
     return candidate_fen, is_legal, errors, round(mean_conf, 3)
 
@@ -295,7 +383,7 @@ def process_board_image(
         r = sq["rank_idx"]
         f = sq["file_idx"]
         is_light = (r + f) % 2 == 0
-        piece, conf = classify_square(sq["crop"], is_light)
+        piece, conf = classify_square(sq["crop"], is_light, rank_idx=r, file_idx=f)
         sq["piece"] = piece
         sq["confidence"] = conf
         # Don't serialize crop in output

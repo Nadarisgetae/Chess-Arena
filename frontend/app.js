@@ -10,7 +10,7 @@
  * ──────────────────────────────────────────────────────────────────
  */
 
-const API = 'http://localhost:8000/api';
+const API = '/api';
 
 // ── Skill → Elo mapping (approximate) ──────────────────────────────
 const SKILL_ELO = {
@@ -29,6 +29,7 @@ const PIECE_CLASS = {
 
 // ── State ──────────────────────────────────────────────────────────
 let state = {
+  playerId:      'guest',
   gameId:        null,
   fen:           null,
   playerColor:   'white',
@@ -322,7 +323,11 @@ document.querySelectorAll('.promo-btn').forEach(btn => {
 // ── Submit move to backend ─────────────────────────────────────────
 
 async function submitMove(moveUci) {
-  if (!state.gameId || state.thinking) return;
+  if (state.thinking) return;
+  if (!state.gameId) {
+    await startNewGame(state.fen);
+  }
+  if (!state.gameId) return;
 
   state.thinking = true;
   setStatus('thinking', `
@@ -431,6 +436,39 @@ function updateCoachCard(result) {
   DOM.coachSummary.textContent  = result.coach_summary || '—';
 }
 
+// ── Coach Hint ─────────────────────────────────────────────────────
+const btnCoachHint = $('btn-coach-hint');
+if (btnCoachHint) {
+  btnCoachHint.addEventListener('click', async () => {
+    if (!state.fen) return;
+    btnCoachHint.disabled = true;
+    btnCoachHint.textContent = '🤔 Calculating Best Move…';
+    try {
+      const data = await apiFetch(`/engine/bestmove?fen=${encodeURIComponent(state.fen)}`);
+      DOM.coachCard.classList.remove('hidden');
+      DOM.coachBadge.textContent = '💡 Coach Advice';
+      DOM.coachBadge.style.color = 'var(--clr-accent)';
+      DOM.coachBadge.style.background = 'rgba(139, 92, 246, 0.15)';
+      DOM.coachBadge.style.borderColor = 'var(--clr-accent)';
+      DOM.coachBestMove.textContent = data.best_move_san || data.best_move_uci || '—';
+      DOM.coachLoss.textContent = `Win chance: ${data.win_pct?.toFixed(1) || 50}%`;
+      DOM.coachSummary.textContent = `Coach suggests playing ${data.best_move_san} (${data.best_move_uci}). This keeps winning probability at approximately ${data.win_pct?.toFixed(1) || 50}%.`;
+
+      // Highlight the suggested move on the board
+      if (data.best_move_uci) {
+        state.selectedSquare = data.best_move_uci.slice(0, 2);
+        state.legalMoves = [data.best_move_uci];
+        renderBoard(state.fen);
+      }
+    } catch (err) {
+      DOM.coachSummary.textContent = `Could not get hint: ${err.message}`;
+    } finally {
+      btnCoachHint.disabled = false;
+      btnCoachHint.textContent = '💡 Ask Coach for Hint';
+    }
+  });
+}
+
 
 // ── Legal moves ────────────────────────────────────────────────────
 
@@ -446,10 +484,14 @@ async function getLegalMoves(fen) {
 
 // ── New Game ───────────────────────────────────────────────────────
 
-async function startNewGame() {
+async function startNewGame(customFen = null) {
   DOM.btnResign.disabled = false;
   DOM.resultBanner.classList.add('hidden');
-  DOM.coachCard.classList.add('hidden');
+  if (currentMode !== MODES.COACH) {
+    DOM.coachCard.classList.add('hidden');
+  } else {
+    DOM.coachCard.classList.remove('hidden');
+  }
   clearMoveTable();
   clearSelection();
 
@@ -466,14 +508,19 @@ async function startNewGame() {
 
   setStatus('default', 'Starting game…');
 
+  const payload = {
+    player_id:    state.playerId || 'guest',
+    skill_level:  state.skillLevel,
+    player_color: state.playerColor,
+  };
+  if (customFen) {
+    payload.fen = customFen;
+  }
+
   try {
     const res = await apiFetch('/game/new', {
       method: 'POST',
-      body: JSON.stringify({
-        player_id:    'guest',
-        skill_level:  state.skillLevel,
-        player_color: state.playerColor,
-      }),
+      body: JSON.stringify(payload),
     });
 
     state.gameId = res.game_id;
@@ -648,7 +695,7 @@ function findKing(fen, color) {
 
 async function checkHealth() {
   try {
-    const res = await fetch('http://localhost:8000/health');
+    const res = await fetch('/health');
     if (res.ok) {
       DOM.statusDot.className  = 'status-dot online';
       DOM.statusLabel.textContent = 'Engine Ready';
@@ -774,9 +821,25 @@ function switchMode(mode) {
   $('analytics-workspace').classList.toggle('hidden', !isAnalytics);
 
   if (mode === MODES.COACH) {
-    DOM.coachCard.style.display = 'block';
+    DOM.coachCard.classList.remove('hidden');
+    if (!state.lastMoveFrom) {
+      DOM.coachBadge.textContent = '🎓 Coach Ready';
+      DOM.coachBadge.style.color = 'var(--clr-accent)';
+      DOM.coachBadge.style.background = 'rgba(139, 92, 246, 0.15)';
+      DOM.coachBadge.style.borderColor = 'var(--clr-accent)';
+      DOM.coachSummary.textContent = 'Coach Mode is active! Make any move on the board to receive instant move quality rating, win% delta, and tactical guidance.';
+    }
+    if (!state.gameId) {
+      startNewGame(state.fen);
+    }
+    setStatus('default', '🎓 Coach Mode Active — Make a move or request a hint!');
   } else if (mode === MODES.ANALYTICS) {
     loadAnalytics();
+  } else if (mode === MODES.PLAY) {
+    if (!state.lastMoveFrom) {
+      DOM.coachCard.classList.add('hidden');
+    }
+    setStatus('default', state.gameId ? `Your turn (${state.playerColor === 'white' ? 'White ♙' : 'Black ♟'})` : 'Click "New Game" to play!');
   }
 }
 
@@ -1100,11 +1163,15 @@ document.querySelectorAll('.pal-btn').forEach(btn => {
 
 function recalculateFenFromGrid() {
   const rows = [];
+  let whiteKings = 0;
+  let blackKings = 0;
   for (let r = 0; r < 8; r++) {
     let emptyCount = 0;
     let rowStr = '';
     for (let f = 0; f < 8; f++) {
       const p = visionState.grid[r][f];
+      if (p === 'K') whiteKings++;
+      if (p === 'k') blackKings++;
       if (p === 'empty' || !p) {
         emptyCount++;
       } else {
@@ -1121,29 +1188,38 @@ function recalculateFenFromGrid() {
   const placement = rows.join('/');
   visionState.recognizedFen = `${placement} w KQkq - 0 1`;
   $('vision-fen-display').textContent = visionState.recognizedFen;
+
+  const pill = $('vision-legality-pill');
+  if (whiteKings === 1 && blackKings === 1) {
+    pill.className = 'status-pill status-legal';
+    pill.textContent = 'Legal Position (Verified)';
+  } else {
+    pill.className = 'status-pill status-illegal';
+    pill.textContent = `Needs 1 White & 1 Black King (Found ${whiteKings}W, ${blackKings}B)`;
+  }
 }
 
 // ── Export Actions ─────────────────────────────────────────────────
-$('btn-vision-to-coach').addEventListener('click', () => {
+$('btn-vision-to-coach').addEventListener('click', async () => {
   if (!visionState.recognizedFen) {
     alert('Please extract a chessboard position first.');
     return;
   }
   state.fen = visionState.recognizedFen;
   switchMode(MODES.COACH);
-  renderBoard(state.fen);
-  setStatus('coach', 'Position imported into Coach Mode. Play a move to get analysis!');
+  await startNewGame(state.fen);
+  setStatus('default', '🎓 Position imported into Coach Mode. Play a move to get analysis!');
 });
 
-$('btn-vision-to-play').addEventListener('click', () => {
+$('btn-vision-to-play').addEventListener('click', async () => {
   if (!visionState.recognizedFen) {
     alert('Please extract a chessboard position first.');
     return;
   }
   state.fen = visionState.recognizedFen;
   switchMode(MODES.PLAY);
-  renderBoard(state.fen);
-  setStatus('play', 'Game started from recognized physical position!');
+  await startNewGame(state.fen);
+  setStatus('default', '⚔ Game started from physical board position!');
 });
 
 $('btn-vision-copy-fen').addEventListener('click', () => {
@@ -1176,7 +1252,7 @@ async function loadAnalytics() {
   btn.disabled = true;
 
   try {
-    const playerId = state.playerId || 'default-player';
+    const playerId = state.playerId || 'guest';
     const res = await fetch(`${API}/analytics/player/${playerId}`);
     if (!res.ok) throw new Error('Failed to load analytics data');
     const data = await res.json();
