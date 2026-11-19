@@ -112,20 +112,31 @@ async def new_game(req: NewGameRequest):
     Stockfish plays the first move immediately.
     """
     game_id = str(uuid.uuid4())
-    starting_fen = req.fen if req.fen else chess.STARTING_FEN
+    # 1. Sanitize player_id
+    player_id = req.player_id if isinstance(req.player_id, str) and req.player_id.strip() else "guest"
 
-    try:
-        board = chess.Board(starting_fen)
-    except ValueError:
-        raise HTTPException(status_code=400, detail=f"Invalid FEN: {starting_fen!r}")
+    # 2. Sanitize player_color
+    player_color = "black" if str(req.player_color or "").lower() == "black" else "white"
+
+    # 3. Sanitize starting FEN
+    starting_fen = chess.STARTING_FEN
+    if isinstance(req.fen, str) and req.fen.strip():
+        try:
+            _b = chess.Board(req.fen.strip())
+            starting_fen = req.fen.strip()
+        except Exception:
+            starting_fen = chess.STARTING_FEN
+    
+    board = chess.Board(starting_fen)
 
     db = await get_db()
 
     actual_skill = 10
-    if req.skill_level == "auto":
+    skill_val = str(req.skill_level or "auto").lower().strip()
+    if skill_val == "auto":
         # Load player profile and history to predict optimal skill
         try:
-            async with db.execute("SELECT * FROM player_profile WHERE player_id = ?", (req.player_id,)) as cur:
+            async with db.execute("SELECT * FROM player_profile WHERE player_id = ?", (player_id,)) as cur:
                 profile_row = await cur.fetchone()
                 profile = dict(profile_row) if profile_row else {}
 
@@ -139,7 +150,7 @@ async def new_game(req: NewGameRequest):
                 WHERE g.player_id = ? AND g.result IS NOT NULL
                 GROUP BY g.id
                 ORDER BY g.started_at DESC LIMIT 50
-            """, (req.player_id,)) as cur:
+            """, (player_id,)) as cur:
                 history_rows = await cur.fetchall()
 
             history = []
@@ -152,9 +163,9 @@ async def new_game(req: NewGameRequest):
                     res_score = 0.0 if hist_col == "white" else 1.0
 
                 history.append({
-                    "engine_skill_level": r["engine_skill_level"],
+                    "engine_skill_level": r["engine_skill_level"] if r["engine_skill_level"] is not None else 10,
                     "result_score": res_score,
-                    "avg_cp_loss": r["avg_cp_loss"] or 50.0,
+                    "avg_cp_loss": r["avg_cp_loss"] if r["avg_cp_loss"] is not None else 50.0,
                 })
 
             model = PlayerDifficultyModel()
@@ -163,13 +174,16 @@ async def new_game(req: NewGameRequest):
         except Exception:
             actual_skill = 10
     else:
-        actual_skill = int(req.skill_level)
+        try:
+            actual_skill = max(0, min(20, int(skill_val)))
+        except (ValueError, TypeError):
+            actual_skill = 10
 
     try:
         await db.execute(
             """INSERT INTO games (id, player_id, mode, engine_skill_level, pgn, player_color, starting_fen)
                VALUES (?, ?, 'play', ?, '', ?, ?)""",
-            (game_id, req.player_id, actual_skill, req.player_color, starting_fen),
+            (game_id, player_id, actual_skill, player_color, starting_fen),
         )
         await db.commit()
     finally:
@@ -178,12 +192,12 @@ async def new_game(req: NewGameRequest):
     response = NewGameResponse(
         game_id=game_id,
         fen=starting_fen,
-        player_color=req.player_color,
+        player_color=player_color,
         skill_level=actual_skill,
     )
 
     # Check if engine makes the first move
-    is_engine_first = (board.turn == chess.WHITE and req.player_color == "black") or (board.turn == chess.BLACK and req.player_color == "white")
+    is_engine_first = (board.turn == chess.WHITE and player_color == "black") or (board.turn == chess.BLACK and player_color == "white")
     if is_engine_first:
         try:
             engine_result = await get_best_move(

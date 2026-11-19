@@ -40,7 +40,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# ── CORS ───────────────────────────────────────────────────────────────────────
+# ── CORS & No-Cache ────────────────────────────────────────────────────────────
 # Allow the frontend (served from file:// or a local dev server) to call the API.
 app.add_middleware(
     CORSMiddleware,
@@ -49,6 +49,17 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def add_no_cache_headers(request, call_next):
+    response = await call_next(request)
+    path = request.url.path.lower()
+    if path == "/" or path.endswith((".html", ".js", ".css")):
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
 
 # ── API Routes ─────────────────────────────────────────────────────────────────
 app.include_router(engine_router, prefix="/api")

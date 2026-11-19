@@ -2,8 +2,8 @@
 models.py — Pydantic v2 request/response schemas for the Chess Arena API.
 """
 
-from typing import Optional
-from pydantic import BaseModel, Field
+from typing import Optional, Any
+from pydantic import BaseModel, Field, ConfigDict
 
 
 # ── Engine Models ──────────────────────────────────────────────────────────────
@@ -35,17 +35,17 @@ class LegalMovesResponse(BaseModel):
 # ── Game Models ────────────────────────────────────────────────────────────────
 
 class NewGameRequest(BaseModel):
-    player_id: str = Field(default="guest", description="Player identifier")
-    skill_level: int | str = Field(
+    model_config = ConfigDict(extra="ignore")
+    player_id: Optional[Any] = Field(default="guest", description="Player identifier")
+    skill_level: Optional[Any] = Field(
         default="auto",
         description="Stockfish Skill Level 0-20, or 'auto' for Statistical Player Model"
     )
-    player_color: str = Field(
+    player_color: Optional[Any] = Field(
         default="white",
-        pattern="^(white|black)$",
         description="Which color the human plays"
     )
-    fen: Optional[str] = Field(
+    fen: Optional[Any] = Field(
         default=None,
         description="Optional custom starting FEN position"
     )
