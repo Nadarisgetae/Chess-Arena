@@ -136,7 +136,15 @@ async function apiFetch(path, opts = {}) {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || res.statusText);
+    let msg = res.statusText;
+    if (typeof err.detail === 'string') {
+      msg = err.detail;
+    } else if (Array.isArray(err.detail)) {
+      msg = err.detail.map(d => d.msg || JSON.stringify(d)).join('; ');
+    } else if (err.detail && typeof err.detail === 'object') {
+      msg = JSON.stringify(err.detail);
+    }
+    throw new Error(msg);
   }
   return res.json();
 }
@@ -513,8 +521,8 @@ async function startNewGame(customFen = null) {
     skill_level:  state.skillLevel,
     player_color: state.playerColor,
   };
-  if (customFen) {
-    payload.fen = customFen;
+  if (typeof customFen === 'string' && customFen.trim().length > 0) {
+    payload.fen = customFen.trim();
   }
 
   try {
@@ -760,8 +768,8 @@ DOM.btnFlip.addEventListener('click', () => {
 
 // ── New Game ───────────────────────────────────────────────────────
 
-DOM.btnNewGame.addEventListener('click', startNewGame);
-$('btn-result-new-game').addEventListener('click', startNewGame);
+DOM.btnNewGame.addEventListener('click', () => startNewGame());
+$('btn-result-new-game').addEventListener('click', () => startNewGame());
 
 
 // ── Resign ────────────────────────────────────────────────────────

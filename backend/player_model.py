@@ -52,16 +52,16 @@ class PlayerDifficultyModel:
         y = []
         for row in historical_data:
             X.append([
-                row.get("avg_cp_loss", 50.0),
-                row.get("blunder_rate", 0.05),
-                row.get("time_variance", 10.0),
-                row.get("endgame_conversion", 0.5),
-                row.get("result_score", 0.5)
+                row.get("avg_cp_loss") if row.get("avg_cp_loss") is not None else 50.0,
+                row.get("blunder_rate") if row.get("blunder_rate") is not None else 0.05,
+                row.get("time_variance") if row.get("time_variance") is not None else 10.0,
+                row.get("endgame_conversion") if row.get("endgame_conversion") is not None else 0.5,
+                row.get("result_score") if row.get("result_score") is not None else 0.5,
             ])
-            y.append(row.get("engine_skill_level", 10))
+            y.append(row.get("engine_skill_level") if row.get("engine_skill_level") is not None else 10)
 
         try:
-            self.model.fit(np.array(X), np.array(y))
+            self.model.fit(np.array(X, dtype=float), np.array(y, dtype=float))
             self.is_fitted = True
         except Exception as e:
             logger.error(f"Failed to fit player model: {e}")
@@ -72,20 +72,20 @@ class PlayerDifficultyModel:
         Predict the engine skill level that would result in a draw (result_score = 0.5)
         for the given player profile.
         """
+        skill_est = profile.get("skill_estimate") if profile.get("skill_estimate") is not None else 1000
+        fallback_level = int((skill_est - 1000) / 75)
+
         if not self.is_fitted or not SKLEARN_AVAILABLE:
             # Fallback to rule-based mapping from skill_estimate if model isn't ready
-            skill_est = profile.get("skill_estimate", 1000)
-            # Roughly: 1000 Elo -> Level 0, 2500 Elo -> Level 20
-            fallback_level = int((skill_est - 1000) / 75)
             return max(0, min(20, fallback_level))
 
         X_pred = np.array([[
-            profile.get("avg_centipawn_loss", 50.0),
-            profile.get("blunder_rate", 0.05),
-            profile.get("time_variance", 10.0),
-            profile.get("endgame_conversion", 0.5),
+            profile.get("avg_centipawn_loss") if profile.get("avg_centipawn_loss") is not None else 50.0,
+            profile.get("blunder_rate") if profile.get("blunder_rate") is not None else 0.05,
+            profile.get("time_variance") if profile.get("time_variance") is not None else 10.0,
+            profile.get("endgame_conversion") if profile.get("endgame_conversion") is not None else 0.5,
             0.5  # target result score: we want an even match
-        ]])
+        ]], dtype=float)
 
         try:
             pred = self.model.predict(X_pred)[0]
@@ -93,4 +93,4 @@ class PlayerDifficultyModel:
             return int(max(0, min(20, round(pred))))
         except Exception as e:
             logger.error(f"Prediction failed: {e}")
-            return 10
+            return max(0, min(20, fallback_level))

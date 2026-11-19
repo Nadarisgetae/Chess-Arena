@@ -11,10 +11,13 @@ from backend.database import init_db
 @pytest.fixture(autouse=True)
 def mock_engine(monkeypatch):
     """Mocks Stockfish calls for machines without binary installed."""
-    async def mock_best_move(*args, **kwargs):
+    async def mock_best_move(fen=None, *args, **kwargs):
+        is_white = True
+        if fen and " b " in fen:
+            is_white = False
         return {
-            "best_move_uci": "e7e5",
-            "best_move_san": "e5",
+            "best_move_uci": "e2e4" if is_white else "e7e5",
+            "best_move_san": "e4" if is_white else "e5",
             "depth": 10,
             "skill_level": 10,
         }
@@ -69,6 +72,42 @@ async def test_create_new_game_player_white():
         assert "game_id" in data
         assert data["player_color"] == "white"
         assert data["engine_move"] is None
+
+
+@pytest.mark.anyio
+async def test_create_new_game_auto_difficulty():
+    await init_db()
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        payload = {
+            "player_id": "guest",
+            "player_color": "white",
+            "skill_level": "auto",
+        }
+        res = await client.post("/api/game/new", json=payload)
+        assert res.status_code == 200
+        data = res.json()
+        assert "game_id" in data
+        assert 0 <= data["skill_level"] <= 20
+
+
+@pytest.mark.anyio
+async def test_create_new_game_player_black():
+    await init_db()
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        payload = {
+            "player_id": "test-player-black",
+            "player_color": "black",
+            "skill_level": "auto",
+        }
+        res = await client.post("/api/game/new", json=payload)
+        assert res.status_code == 200
+        data = res.json()
+        assert "game_id" in data
+        assert data["player_color"] == "black"
+        assert data["engine_move"] is not None
+        assert data["engine_move_san"] is not None
 
 
 @pytest.mark.anyio
