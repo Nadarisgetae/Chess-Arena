@@ -6,9 +6,10 @@ Persists game state (FEN, moves, PGN) in SQLite.
 import json
 import logging
 import uuid
+from typing import Optional
 import chess
 import chess.pgn
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Body
 from backend.database import get_db
 from backend.engine_service import apply_move, get_best_move
 from backend.coach_service import analyse_played_move
@@ -106,11 +107,13 @@ async def _update_player_stats(player_id: str) -> None:
 # ── Routes ─────────────────────────────────────────────────────────────────────
 
 @router.post("/new", response_model=NewGameResponse, summary="Start a new game")
-async def new_game(req: NewGameRequest):
+async def new_game(req: Optional[NewGameRequest] = Body(default=None)):
     """
     Create a new game record in the DB. If the player chose black,
     Stockfish plays the first move immediately.
     """
+    if req is None:
+        req = NewGameRequest()
     game_id = str(uuid.uuid4())
     # 1. Sanitize player_id
     player_id = req.player_id if isinstance(req.player_id, str) and req.player_id.strip() else "guest"
